@@ -7,11 +7,19 @@ jobs:
         steps:
             - checkout
             - run: |
+                  apk add --no-cache gettext
+
                   cd ..
                   git clone git@github.com:borchero/helm-charts.git
 
-                  rm -rf helm-charts/charts/switchboard
-                  mv project/deploy/helm helm-charts/charts/switchboard
+                  export DEST=helm-charts/charts/switchboard@${CIRCLE_TAG}
+                  mv project/deploy/helm ${DEST}
+
+                  envsubst < ${DEST}/values.yaml > ${DEST}/values.subst.yaml
+                  mv ${DEST}/values.subst.yaml ${DEST}/values.yaml
+
+                  envsubst < ${DEST}/Chart.yaml > ${DEST}/Chart.subst.yaml
+                  mv ${DEST}/Chart.subst.yaml ${DEST}/Chart.yaml
 
                   cd helm-charts
                   git config user.name "circleci"
@@ -24,4 +32,9 @@ workflows:
     version: 2
     deploy:
         jobs:
-            - upload-chart
+            - upload-chart:
+                  filters:
+                      branches:
+                          ignore: /.*/
+                      tags:
+                          only: /.*/

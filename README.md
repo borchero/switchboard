@@ -1,5 +1,7 @@
 # Switchboard
 
+![Docker Image Version](https://img.shields.io/docker/v/borchero/switchboard)
+
 Switchboard is a tool that manages DNS zones and their A/CNAME records for arbitrary backends. It
 runs as Kubernetes controller and watches for custom resources `DNSZone` and `DNSRecord`.
 
@@ -22,6 +24,15 @@ than external-dns is able to do.
 
 **_Caveat: Use this component with care. Although it has been tested for common use cases, there
 are no comprehensive tests and performance for large clusters might become an issue._**
+
+## Installation
+
+Switchboard can be installed using Helm as follows:
+
+```
+helm repo add borchero https://charts.borchero.com
+helm install switchboard borchero/switchboard --version
+```
 
 ## Resources
 
