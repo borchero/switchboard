@@ -1,0 +1,27 @@
+version: 2.1
+
+jobs:
+    upload-chart:
+        docker:
+            - image: alpine/git:latest
+        steps:
+            - checkout
+            - run: |
+                  cd ..
+                  git clone git@github.com/borchero/helm-charts
+
+                  rm -rf helm-charts/charts/switchboard
+                  mv project/deploy/helm helm-charts/charts/switchboard
+
+                  cd helm-charts
+                  git config user.name "circleci"
+                  git config user.email "noreply@borchero.com"
+                  git add .
+                  git commit -m "Update Charts"
+                  git push origin master
+
+workflows:
+    version: 2
+    deploy:
+        jobs:
+            - upload-chart

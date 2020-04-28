@@ -1,0 +1,100 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.3.0
+  creationTimestamp: null
+  name: dnsresources.switchboard.borchero.com
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.type
+    name: TYPE
+    type: string
+  - JSONPath: .spec.domain
+    name: DOMAIN
+    type: string
+  - JSONPath: .spec.data
+    name: DATA
+    type: string
+  - JSONPath: .status.ready
+    name: READY
+    type: boolean
+  group: switchboard.borchero.com
+  names:
+    kind: DNSResource
+    listKind: DNSResourceList
+    plural: dnsresources
+    singular: dnsresource
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: DNSResource represents a DNS resource record, i.e. a single entry
+        in a particular DNS zone.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: DNSResourceSpec represents the specification for a DNSResource.
+          properties:
+            data:
+              type: string
+            domain:
+              type: string
+            ttl:
+              description: TimeToLive describes the time for which a DNS record should
+                be kept in the cache.
+              maximum: 86400
+              minimum: 60
+              type: integer
+            type:
+              description: DNSType describes the set of valid types for a DNS resource.
+              enum:
+              - A
+              - CNAME
+              type: string
+            zoneName:
+              type: string
+          required:
+          - data
+          - domain
+          - ttl
+          - type
+          - zoneName
+          type: object
+        status:
+          description: DNSResourceStatus indicates whether the item has been added
+            to its backend successfully.
+          properties:
+            ready:
+              type: boolean
+          required:
+          - ready
+          type: object
+      required:
+      - spec
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

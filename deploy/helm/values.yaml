@@ -1,0 +1,8 @@
+image:
+    name: borchero/switchboard
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+
+replicas: 1
+
+resources: {}

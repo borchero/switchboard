@@ -1,0 +1,156 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.3.0
+  creationTimestamp: null
+  name: dnsrecords.switchboard.borchero.com
+spec:
+  group: switchboard.borchero.com
+  names:
+    kind: DNSRecord
+    listKind: DNSRecordList
+    plural: dnsrecords
+    singular: dnsrecord
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: DNSRecord represents the DNSRecord CRD which maps a set of hosts
+        and cnames to a DNSZone.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: DNSRecordSpec defines the specification for a DNSRecord CRD.
+          properties:
+            cnames:
+              items:
+                type: string
+              type: array
+            hosts:
+              items:
+                type: string
+              minItems: 1
+              type: array
+            tls:
+              description: TLSSpec defines a specification to obtain a TLS certificate
+                for a set of hostnames.
+              properties:
+                certificateName:
+                  type: string
+                issuer:
+                  description: IssuerRef is used to reference a cert-manager issuer.
+                  properties:
+                    kind:
+                      description: IssuerKind describes the kind an issuer may be.
+                      enum:
+                      - Issuer
+                      - ClusterIssuer
+                      type: string
+                    name:
+                      type: string
+                  required:
+                  - name
+                  type: object
+                secretName:
+                  type: string
+              required:
+              - certificateName
+              - issuer
+              type: object
+            ttl:
+              description: TimeToLive describes the time for which a DNS record should
+                be kept in the cache.
+              maximum: 86400
+              minimum: 60
+              type: integer
+            zones:
+              items:
+                description: DNSZoneRef references a DNS zone and optionally overrides
+                  the default IP source.
+                properties:
+                  name:
+                    type: string
+                  nodeIP:
+                    description: NodeIPSource refers to the IP of a random node.
+                    properties:
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      type:
+                        description: NodeIPType describes a type of a node IP.
+                        enum:
+                        - ExternalIP
+                        - InternalIP
+                        type: string
+                    type: object
+                  serviceIP:
+                    description: ServiceIPSource refers the source of an IP to the
+                      IP of a service, either public or private.
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                      type:
+                        description: ServiceIPType describes a type of service IP.
+                        enum:
+                        - ExternalIP
+                        - ClusterIP
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  staticIP:
+                    description: StaticIPSource refers to a static IP.
+                    properties:
+                      ip:
+                        type: string
+                    required:
+                    - ip
+                    type: object
+                  ttl:
+                    description: TimeToLive describes the time for which a DNS record
+                      should be kept in the cache.
+                    maximum: 86400
+                    minimum: 60
+                    type: integer
+                required:
+                - name
+                type: object
+              minItems: 1
+              type: array
+          required:
+          - hosts
+          - zones
+          type: object
+      required:
+      - metadata
+      - spec
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

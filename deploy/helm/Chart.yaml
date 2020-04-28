@@ -1,0 +1,11 @@
+apiVersion: v2
+type: application
+name: switchboard
+version: 0.1.0
+description: Kubernetes controller for provider-agnostic DNS record CRDs.
+maintainers:
+-   name: Oliver Borchert
+    email: borchero@icloud.com
+keywords:
+-   network
+-   dns
