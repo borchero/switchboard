@@ -4,5 +4,6 @@ image:
     pullPolicy: IfNotPresent
 
 replicas: 1
+podAnnotations: {}
 
 resources: {}
