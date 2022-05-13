@@ -1,8 +1,8 @@
 name: Check Code
 on:
   push:
-    tags-ignore:
-      - "v*"
+    branches:
+      - "*"
 
 jobs:
   lint:
@@ -21,5 +21,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Kubernetes Cluster
+        uses: helm/kind-action@1.2.0
       - name: Run Unit Tests
         run: go test ./...
