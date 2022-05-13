@@ -22,6 +22,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Kubernetes Cluster
-        uses: helm/kind-action@1.2.0
+        uses: helm/kind-action@v1.2.0
       - name: Run Unit Tests
         run: go test ./...
