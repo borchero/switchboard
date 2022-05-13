@@ -26,5 +26,9 @@ jobs:
           go-version: ">=1.17.0"
       - name: Setup Kubernetes Cluster
         uses: helm/kind-action@v1.2.0
+        with:
+          cluster_name: switchboard-tests
+      - name: Deploy CRDs
+        run: make setup-cluster KIND_CLUSTER_NAME=switchboard-tests
       - name: Run Unit Tests
         run: go test ./...
