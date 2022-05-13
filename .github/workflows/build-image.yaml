@@ -1,13 +1,14 @@
 name: Build Container Image
 on:
+  release:
+    types:
+      - published
   pull_request:
     branches:
       - main
   push:
     branches:
       - main
-    tags:
-      - "v*"
 
 jobs:
   build:
