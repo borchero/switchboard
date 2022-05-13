@@ -1,1 +1,9 @@
-go.sum
+# Editor
+.vscode/
+
+# kubebuilder
+/bin
+/config
+
+# Tests
+cover.out

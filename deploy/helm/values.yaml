@@ -1,9 +1,0 @@
-image:
-    name: borchero/switchboard
-    tag: ${CIRCLE_TAG}
-    pullPolicy: IfNotPresent
-
-replicas: 1
-podAnnotations: {}
-
-resources: {}

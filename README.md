@@ -1,173 +1,110 @@
 # Switchboard
 
-![Docker Image Version](https://img.shields.io/docker/v/borchero/switchboard)
+![License](https://img.shields.io/github/license/borchero/switchboard)
 
-Switchboard is a tool that manages DNS zones and their A/CNAME records for arbitrary backends. It
-runs as Kubernetes controller and watches for custom resources `DNSZone` and `DNSRecord`.
+Switchboard is a Kubernetes operator that automates the creation of DNS records and TLS
+certificates when using [Traefik](https://github.com/traefik/traefik) v2 and its
+[`IngressRoute` custom resource](https://doc.traefik.io/traefik/routing/providers/kubernetes-crd/#kind-ingressroute).
 
-While [External DNS](https://github.com/kubernetes-sigs/external-dns) is already well-established
-and works well for most use-cases, we decided to write our own tool for the following reasons:
+Traefik is an amazing reverse proxy and load balancer for Kubernetes, but has two major issues when
+using it in production:
 
-- Switchboard does not enforce the usage of the `Ingress` resource. As ingress controllers mature,
-  custom resources such as the `IngressRoute` introduced by
-  [Traefik 2.0](https://docs.traefik.io/migration/v1-to-v2/) may become more common.
-- In its core, Switchboard is designed to work with multiple (overlapping) DNS zones and can
-  therefore be used for split horizon configurations with any backend. Most importantly: with
-  Google Cloud DNS. Besides, we can use cluster IPs for our internal DNS.
-- We have a more fine-grained control over the DNS records. For example, we can easily set the time
-  to live for individual records.
-- Lastly, Switchboard integrates tightly with [cert-manager](https://cert-manager.io/) to generate
-  TLS certificates for DNS records (i.e. a set of domains).
+- You cannot use Traefik to automatically issue TLS certificates from Let's Encrypt when running
+  multiple Traefik instances (see
+  [the documentation](https://doc.traefik.io/traefik/providers/kubernetes-crd/#letsencrypt-support-with-the-custom-resource-definition-provider)).
+- External tools do not support sourcing hostnames for DNS records from custom resources (including
+  the Traefik `IngressRoute` CRD).
 
-In summary, Switchboard provides a more native integration of external DNS records into Kubernetes
-than external-dns is able to do.
+Switchboard solves these two issues by integrating the Traefik `IngressRoute` CRD with
+[cert-manager](https://cert-manager.io) and
+[external-dns](https://github.com/kubernetes-sigs/external-dns). Every time the user creates an
+`IngressRoute` resource in the cluster, Switchboard performs the following actions:
 
-**_Caveat: Use this component with care. Although it has been tested for common use cases, there
-are no comprehensive tests and performance for large clusters might become an issue._**
+- If the `IngressRoute` has the field `.spec.tls.secretName` set, it creates a cert-manager
+  `Certificate`. A running cert-manager installation will pick up the certificate, issue it, and
+  create a secret with the desired name. Traefik will then automatically secure the connection with
+  this certificate.
+- If any of the routes (`.spec.routes`) of the `IngressRoute` has an entry which references a host
+  (e.g. a rule `` Host(`my.example.com`) ``), Switchboard creates a `DNSEndpoint` resource (which
+  is a CRD defined by external-dns). Depending on your external-dns configuration, this will create
+  a DNS A record in your configured provider, using the rule's host (e.g. `my.example.com`) and the
+  external IP of your Traefik service as the value (or the internal IP if it does not have an
+  external one).
+
+Note that the `IngressRoute` resources that are processed by Switchboard depend on its configured
+**groups** (see below).
+
+_Note: This version of Switchboard is a complete rewrite of Switchboard v0.1 which will not be
+maintained anymore. Please refer to the appropriate tags in this repository if you still need to
+use it. Be aware that this version of Switchboard provides significantly more functionality while
+being considerably more reliable due to its integration with external-dns._
 
 ## Installation
 
-Switchboard can be installed using Helm as follows:
+Switchboard can be conveniently installed using [Helm](https://helm.sh). For a full installation
+guide, consult the [chart repository](https://github.com/borchero/switchboard-chart).
 
-```
-helm repo add borchero https://charts.borchero.com
-helm install switchboard borchero/switchboard --version
-```
+## Example
 
-## Resources
-
-In total, Switchboard makes use of 4 CRDs, however, only two of them should ever be created by the
-user. Namely, `DNSZone` and `DNSRecord`.
-
-_Note: As Switchboard does not currently employ any webhooks, validation might fail when trying to
-create "internal" CRDs manually._
-
-### DNS Zone
-
-A DNS zone models a zone as defined at the cloud provider. Every zone therefore includes a reference
-to _exactly one_ backend and authentication credentials (as provided by a secret).
-
-It further provides a way for having a _template IP source_. The IP source might e.g. be a static IP
-(as all domains are routed to a public load balancer) or the public IP of a service (if an ingress
-controller such as Traefik is used).
-
-DNS zones are cluster-level resources and you must therefore always provide a namespace when
-referring to Kubernetes resources from a zone.
-
-The `DNSZone` resource can be specified as follows:
+As outlined above, Switchboard process Traefik `IngressRoute` resources and (optionally) creates
+`Certificate` and `DNSEndpoint` resources. For example, you might create the following ingress
+route:
 
 ```yaml
-apiVersion: switchboard.borchero.com/v1alpha1
-kind: DNSZone
-
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
 metadata:
-  name: my-zone
-
+  name: my-ingress
 spec:
-  # Must specify exactly one backend
-  clouddns:
-    # Required zone name as specified on the Google Cloud Platform
-    zoneName: my-zone-name
-    # Credentials for a service account
-    credentialsSecret:
-      name: secret-name
-      namespace: secret-namespace
-      key: secret-key
-  # May specify *at most one* record template
-  recordTemplate:
-    # Source the IP of a random node matching a set of labels
-    nodeIP:
-      matchLabels: {}
-      type: ExternalIP | InternalIP
-    # Source the IP of a service - either external or internal
-    serviceIP:
-      name: my-service
-      namespace: my-namespace
-      type: ExternalIP | ClusterIP
-    # Use a static IP (e.g. reserved on the Google Cloud)
-    staticIP:
-      ip: 50.60.70.80
-    # Additionally, the ttl may be set (the default is 300)
-    ttl: 300
-```
-
-### DNS Record
-
-A DNS record models a set of actual DNS records (referred to as DNS _resources_ in the following),
-however, all these resources have the same endpoint. A DNS record may specify multiple subdomains
-that get an A entry with the same IP and also CNAME records pointing to these A records.
-
-A DNS record may further be added to multiple zones (which is useful for split horizon
-configurations) with different IPs for each zone.
-
-The `DNSRecord` resource can be specified as follows:
-
-```yaml
-apiVersion: switchboard.borchero.com/v1alpha1
-kind: DNSRecord
-
-metadata:
-  name: my-record
-
-spec:
-  # The subdomains for the A records (@ matches no subdomain)
-  hosts: ["@"]
-  # The CNAME records referring to the first A record
-  cnames: ["www"]
-  # A TLS configuration to automatically obtain certificates for the domain and all cname records
+  routes:
+    - kind: Rule
+      match: Host(`www.example.com`) && PathPrefix(`/images`)
+      services:
+        - name: nginx
   tls:
-    certificateName: my-certificate
-    secretName: my-certificate-secret
-    issuer:
-      kind: Issuer | ClusterIssuer
-      name: my-issuer
-  # A default TTL for the certificate (applies to all zones if given)
-  ttl: 300
-  # A set of zones to which this record should be added. It may define the IP source (i.e. the
-  # contents of the `recordTemplate` block in the `DNSZone` resource) per zone.
-  zones:
-    # In this case, we override the default IP
-    - name: my-zone
-      staticIP:
-        ip: 60.70.80.90
-    # In this case, we use the default IP as provided by the `recordTemplate` block
-    - name: my-other-zone
+    secretName: www-tls-certificate
 ```
 
-### Internal Resources
+As this ingress is TLS-protected, Switchboard creates a certificate:
 
-Internal resources are created by the Switchboard controller and can therefore be accessed via
-`kubectl` or the Kubernetes API. They are _not_ intended to be interacted with.
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  # The name is automatically generated from the name of the ingress route
+  name: my-ingress-tls
+  labels:
+    kubernetes.io/managed-by: switchboard
+spec:
+  # The issuer reference is obtained from Switchboard's global configuration
+  issuerRef:
+    kind: ClusterIssuer
+    name: ca-issuer
+  # The DNS names are extracted from the ingress route's hosts
+  dnsNames:
+    - www.example.com
+  # The secret name is copied from the ingress route definition
+  secretName: www-tls-certificate
+```
 
-#### DNS Zone Record
+Further, it creates a DNS endpoint pointing to your Traefik instance that can be picked up by
+`external-dns`:
 
-As a `DNSRecord` may be part of multiple zones, this record models a DNS record in a single zone.
-
-#### DNS Resource
-
-As every `DNSRecord` (as defined by Switchboard) may have multiple "aliases" (i.e. A records,
-CNAME records), a `DNSResource` models the actual record that is pushed to the backend.
-
-## Backends
-
-Switchboard is designed to work with a multitude of backends that provide name resolution.
-Currently, Google Cloud DNS is the only supported backend, but extending Switchboard is easy.
-
-### Cloud DNS
-
-In order to create DNS records for Google Cloud DNS, you should first make sure that you have a
-service account with the `roles/dns.admin` role assigned. You should then create a Kubernetes
-`Secret` that contains a key for the service account to be referenced by a DNS zone.
-
-_Note: DNS Zones must already exist prior to referencing them via Switchboard. Although automatic
-creation would be easy, we consider this to be outside this tool's realm._
-
-## Limitations and Known Issues
-
-- When updating a `DNSZone` to refer to a different backend, old entries are _not_ deleted from the
-  original zone. Thus, it is recommended to first delete the old zone and subsequently create a new
-  one with the same name.
-- When deleting a `DNSZone` it may take up to 60 seconds (but no longer) until deletion is
-  finished, depending on the number of records associated with the zone. This results from a
-  hard-coded time-limit to attempt deleting all relevant entries from the zone. This may, however,
-  be unsuccessful.
+```yaml
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  # The name is the same as the ingress's name
+  name: my-ingress
+  labels:
+    kubernetes.io/managed-by: switchboard
+spec:
+  # The endpoints are automatically obtained from all hostnames in the ingress route's rules
+  endpoints:
+    - dnsName: www.example.com
+      recordTTL: 300
+      recordType: A
+      targets:
+        # The target is the public (or, if unavailable, private) IP address of your Traefik instance
+        - 10.96.0.10
+```
