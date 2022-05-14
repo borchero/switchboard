@@ -1,6 +1,7 @@
 # Switchboard
 
 ![License](https://img.shields.io/github/license/borchero/switchboard)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/switchboard)](https://artifacthub.io/packages/search?repo=switchboard)
 
 Switchboard is a Kubernetes operator that automates the creation of DNS records and TLS
 certificates when using [Traefik](https://github.com/traefik/traefik) v2 and its
