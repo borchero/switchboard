@@ -32,9 +32,6 @@ Switchboard solves these two issues by integrating the Traefik `IngressRoute` CR
   external IP of your Traefik service as the value (or the internal IP if it does not have an
   external one).
 
-Note that the `IngressRoute` resources that are processed by Switchboard depend on its configured
-**groups** (see below).
-
 _Note: This version of Switchboard is a complete rewrite of Switchboard v0.1 which will not be
 maintained anymore. Please refer to the appropriate tags in this repository if you still need to
 use it. Be aware that this version of Switchboard provides significantly more functionality while
