@@ -3,10 +3,10 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 
 	configv1 "github.com/borchero/switchboard/api/v1"
+	"github.com/borchero/switchboard/pkg/switchboard"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
@@ -28,12 +28,6 @@ const (
 	managedByAnnotationKey = "kubernetes.io/managed-by"
 	ingressAnnotationKey   = "kubernetes.io/ingress.class"
 	ignoreAnnotationKey    = "switchboard.borchero.com/ignore"
-
-	hostRegex = "`((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9])`"
-)
-
-var (
-	hostRuleRegex = regexp.MustCompile(fmt.Sprintf("Host\\(%s(?:, *%s)*\\)", hostRegex, hostRegex))
 )
 
 // IngressRouteReconciler reconciles an IngressRoute object.
@@ -71,9 +65,12 @@ func (r *IngressRouteReconciler) Reconcile(
 	}
 	logger.Debug("reconciling ingress route")
 
-	// Now, we have to ensure that all the dependent resources exist.
-	hosts := r.getHostsFromIngress(ingressRoute)
-	if len(hosts) == 0 {
+	// Now, we have to ensure that all the dependent resources exist. For this, we first have to
+	// extract all hosts from the ingress.
+	hosts := switchboard.NewHostAggregator()
+	hosts.ParseTLSHosts(ingressRoute.Spec.TLS)
+	hosts.ParseRouteHostsIfRequired(ingressRoute.Spec.Routes)
+	if hosts.Len() == 0 {
 		// If there are no hosts defined on the ingress route, we can skip the remaining steps
 		logger.Info("ingress route does not require DNS endpoint or certificate")
 		return ctrl.Result{}, nil
@@ -157,41 +154,6 @@ func (r *IngressRouteReconciler) getAllIngressRoutes(service client.Object) []re
 	return requests
 }
 
-func (r *IngressRouteReconciler) getHostsFromIngress(route traefik.IngressRoute) []string {
-	hosts := map[string]struct{}{}
-	// First, we try to get hosts from the domains under the TLS key
-	if route.Spec.TLS != nil {
-		for _, domain := range route.Spec.TLS.Domains {
-			hosts[domain.Main] = struct{}{}
-			for _, san := range domain.SANs {
-				hosts[san] = struct{}{}
-			}
-		}
-	}
-
-	// If no domains are provided, we parse rules
-	if len(hosts) == 0 {
-		for _, route := range route.Spec.Routes {
-			if route.Kind == "Rule" {
-				for _, matches := range hostRuleRegex.FindAllStringSubmatch(route.Match, -1) {
-					for _, match := range matches[1:] {
-						if match != "" {
-							hosts[match] = struct{}{}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// Map to array
-	result := make([]string, 0, len(hosts))
-	for host := range hosts {
-		result = append(result, host)
-	}
-	return result
-}
-
 func (r *IngressRouteReconciler) getTargetIP(ctx context.Context) (string, error) {
 	service := v1.Service{}
 	name := types.NamespacedName{
@@ -212,21 +174,11 @@ func (r *IngressRouteReconciler) getTargetIP(ctx context.Context) (string, error
 }
 
 func (r *IngressRouteReconciler) createDNSEndpoint(
-	route traefik.IngressRoute, hosts []string, targetIP string,
+	route traefik.IngressRoute, hosts *switchboard.HostAggregator, targetIP string,
 ) (endpoint.DNSEndpoint, error) {
 	annotations := map[string]string{}
 	if ingressClass, ok := route.Annotations[ingressAnnotationKey]; ok {
 		annotations[ingressAnnotationKey] = ingressClass
-	}
-
-	endpoints := make([]*endpoint.Endpoint, len(hosts))
-	for i, host := range hosts {
-		endpoints[i] = &endpoint.Endpoint{
-			DNSName:    host,
-			Targets:    []string{targetIP},
-			RecordType: "A",
-			RecordTTL:  300,
-		}
 	}
 
 	dnsEndpoint := endpoint.DNSEndpoint{
@@ -239,7 +191,7 @@ func (r *IngressRouteReconciler) createDNSEndpoint(
 			},
 		},
 		Spec: endpoint.DNSEndpointSpec{
-			Endpoints: endpoints,
+			Endpoints: hosts.DNSEndpoints(targetIP, 300),
 		},
 	}
 
@@ -280,7 +232,7 @@ func (r *IngressRouteReconciler) upsertDNSEndpoint(
 }
 
 func (r *IngressRouteReconciler) createTLSCertificate(
-	route traefik.IngressRoute, hosts []string,
+	route traefik.IngressRoute, hosts *switchboard.HostAggregator,
 ) (certmanager.Certificate, error) {
 	certificate := certmanager.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
@@ -292,7 +244,7 @@ func (r *IngressRouteReconciler) createTLSCertificate(
 		},
 		Spec: certmanager.CertificateSpec{
 			SecretName: route.Spec.TLS.SecretName,
-			DNSNames:   hosts,
+			DNSNames:   hosts.Hosts(),
 			IssuerRef: cmmeta.ObjectReference{
 				Name: r.IngressConfig.Issuer.Name,
 				Kind: r.IngressConfig.Issuer.Kind,
