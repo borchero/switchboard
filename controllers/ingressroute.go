@@ -158,12 +158,24 @@ func (r *IngressRouteReconciler) getAllIngressRoutes(service client.Object) []re
 }
 
 func (r *IngressRouteReconciler) getHostsFromIngress(route traefik.IngressRoute) []string {
-	// Get unique hosts
 	hosts := map[string]struct{}{}
-	for _, route := range route.Spec.Routes {
-		if route.Kind == "Rule" {
-			for _, match := range hostRegex.FindAllStringSubmatch(route.Match, -1) {
-				hosts[match[1]] = struct{}{}
+	// First, we try to get hosts from the domains under the TLS key
+	if route.Spec.TLS != nil {
+		for _, domain := range route.Spec.TLS.Domains {
+			hosts[domain.Main] = struct{}{}
+			for _, san := range domain.SANs {
+				hosts[san] = struct{}{}
+			}
+		}
+	}
+
+	// If no domains are provided, we parse rules
+	if len(hosts) == 0 {
+		for _, route := range route.Spec.Routes {
+			if route.Kind == "Rule" {
+				for _, match := range hostRegex.FindAllStringSubmatch(route.Match, -1) {
+					hosts[match[1]] = struct{}{}
+				}
 			}
 		}
 	}
