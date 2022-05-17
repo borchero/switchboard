@@ -124,6 +124,39 @@ func TestIngressCustomDNS(t *testing.T) {
 	})
 }
 
+func TestIngressMultipleRules(t *testing.T) {
+	runTest(t, testCase{
+		Ingress: traefik.IngressRoute{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "my-ingress",
+			},
+			Spec: traefik.IngressRouteSpec{
+				Routes: []traefik.Route{{
+					Kind:  "Rule",
+					Match: "Host(`example.com`, `www.example.com`)",
+					Services: []traefik.Service{{
+						LoadBalancerSpec: traefik.LoadBalancerSpec{
+							Name: "nginx",
+						},
+					}},
+				}, {
+					Kind:  "Rule",
+					Match: "Host(`v2.example.com`)",
+					Services: []traefik.Service{{
+						LoadBalancerSpec: traefik.LoadBalancerSpec{
+							Name: "nginx",
+						},
+					}},
+				}},
+				TLS: &traefik.TLS{
+					SecretName: "www-tls-certificate",
+				},
+			},
+		},
+		DNSNames: []string{"example.com", "www.example.com", "v2.example.com"},
+	})
+}
+
 //-------------------------------------------------------------------------------------------------
 // TESTING UTILITIES
 //-------------------------------------------------------------------------------------------------

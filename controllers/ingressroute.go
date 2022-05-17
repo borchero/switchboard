@@ -28,12 +28,12 @@ const (
 	managedByAnnotationKey = "kubernetes.io/managed-by"
 	ingressAnnotationKey   = "kubernetes.io/ingress.class"
 	ignoreAnnotationKey    = "switchboard.borchero.com/ignore"
+
+	hostRegex = "`((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9])`"
 )
 
 var (
-	hostRegex = regexp.MustCompile(
-		"Host\\(`((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9])`\\)",
-	)
+	hostRuleRegex = regexp.MustCompile(fmt.Sprintf("Host\\(%s(?:, *%s)*\\)", hostRegex, hostRegex))
 )
 
 // IngressRouteReconciler reconciles an IngressRoute object.
@@ -173,8 +173,12 @@ func (r *IngressRouteReconciler) getHostsFromIngress(route traefik.IngressRoute)
 	if len(hosts) == 0 {
 		for _, route := range route.Spec.Routes {
 			if route.Kind == "Rule" {
-				for _, match := range hostRegex.FindAllStringSubmatch(route.Match, -1) {
-					hosts[match[1]] = struct{}{}
+				for _, matches := range hostRuleRegex.FindAllStringSubmatch(route.Match, -1) {
+					for _, match := range matches[1:] {
+						if match != "" {
+							hosts[match] = struct{}{}
+						}
+					}
 				}
 			}
 		}
