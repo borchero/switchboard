@@ -16,7 +16,6 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -78,7 +77,11 @@ func (r *IngressRouteReconciler) Reconcile(
 	}
 
 	// First, we attempt to update the DNS entries.
-	targetIP, err := r.getTargetIP(ctx)
+	target := switchboard.NewTarget(
+		r.IngressConfig.TargetService.Name,
+		r.IngressConfig.TargetService.Namespace,
+	)
+	targetIP, err := target.IP(ctx, r.Client)
 	if err != nil {
 		logger.Error("failed to obtain target IP", zap.Error(err))
 		return ctrl.Result{}, err
@@ -153,25 +156,6 @@ func (r *IngressRouteReconciler) getAllIngressRoutes(service client.Object) []re
 		requests[i].Namespace = item.Namespace
 	}
 	return requests
-}
-
-func (r *IngressRouteReconciler) getTargetIP(ctx context.Context) (string, error) {
-	service := v1.Service{}
-	name := types.NamespacedName{
-		Name:      r.IngressConfig.TargetService.Name,
-		Namespace: r.IngressConfig.TargetService.Namespace,
-	}
-	if err := r.Get(ctx, name, &service); err != nil {
-		return "", fmt.Errorf("failed to query for target service: %w", err)
-	}
-
-	// The IP is either the first load balancer IP or the cluster IP
-	targetIP := service.Spec.ClusterIP
-	lbIngress := service.Status.LoadBalancer.Ingress
-	if len(lbIngress) > 0 {
-		targetIP = lbIngress[0].IP
-	}
-	return targetIP, nil
 }
 
 func (r *IngressRouteReconciler) createDNSEndpoint(
