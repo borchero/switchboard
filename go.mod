@@ -1,6 +1,6 @@
 module github.com/borchero/switchboard
 
-go 1.17
+go 1.18
 
 require (
 	github.com/borchero/zeus v1.0.0

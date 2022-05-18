@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	configv1 "github.com/borchero/switchboard/api/v1"
+	"github.com/borchero/switchboard/pkg/k8s"
 	"github.com/borchero/switchboard/pkg/switchboard"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
@@ -87,7 +88,7 @@ func (r *IngressRouteReconciler) Reconcile(
 		logger.Error("failed to obtain DNS endpoint", zap.Error(err))
 		return ctrl.Result{}, err
 	}
-	if err := r.upsertDNSEndpoint(ctx, dnsEndpoint); err != nil {
+	if _, err := k8s.Upsert(ctx, r.Client, &dnsEndpoint); err != nil {
 		logger.Error("failed to upsert DNS endpoint", zap.Error(err))
 		return ctrl.Result{}, err
 	}
@@ -100,7 +101,7 @@ func (r *IngressRouteReconciler) Reconcile(
 			logger.Error("failed to obtain TLS certificate", zap.Error(err))
 			return ctrl.Result{}, err
 		}
-		if err := r.upsertTLSCertificate(ctx, certificate); err != nil {
+		if _, err := k8s.Upsert(ctx, r.Client, &certificate); err != nil {
 			if strings.Contains(err.Error(), "the object has been modified") {
 				logger.Debug("failed to upsert TLS certificate", zap.Error(err))
 			} else {
@@ -203,34 +204,6 @@ func (r *IngressRouteReconciler) createDNSEndpoint(
 	return dnsEndpoint, nil
 }
 
-func (r *IngressRouteReconciler) upsertDNSEndpoint(
-	ctx context.Context, dnsEndpoint endpoint.DNSEndpoint,
-) error {
-	key := types.NamespacedName{
-		Name:      dnsEndpoint.Name,
-		Namespace: dnsEndpoint.Namespace,
-	}
-
-	existingDNSEndpoint := endpoint.DNSEndpoint{}
-	if err := r.Get(ctx, key, &existingDNSEndpoint); err != nil {
-		if apierrs.IsNotFound(err) {
-			if err := r.Create(ctx, &dnsEndpoint); err != nil {
-				return fmt.Errorf("failed to create DNS endpoint: %w", err)
-			}
-			return nil
-		}
-		return fmt.Errorf("failed to query for existing DNS endpoint: %w", err)
-	}
-
-	dnsEndpoint.Spec.DeepCopyInto(&existingDNSEndpoint.Spec)
-	existingDNSEndpoint.Annotations = dnsEndpoint.Annotations
-	existingDNSEndpoint.Labels = dnsEndpoint.Labels
-	if err := r.Update(ctx, &existingDNSEndpoint); err != nil {
-		return fmt.Errorf("failed to update DNS endpoint: %w", err)
-	}
-	return nil
-}
-
 func (r *IngressRouteReconciler) createTLSCertificate(
 	route traefik.IngressRoute, hosts *switchboard.HostAggregator,
 ) (certmanager.Certificate, error) {
@@ -258,31 +231,4 @@ func (r *IngressRouteReconciler) createTLSCertificate(
 		)
 	}
 	return certificate, nil
-}
-
-func (r *IngressRouteReconciler) upsertTLSCertificate(
-	ctx context.Context, certificate certmanager.Certificate,
-) error {
-	key := types.NamespacedName{
-		Name:      certificate.Name,
-		Namespace: certificate.Namespace,
-	}
-
-	existingCertificate := certmanager.Certificate{}
-	if err := r.Get(ctx, key, &existingCertificate); err != nil {
-		if apierrs.IsNotFound(err) {
-			if err := r.Create(ctx, &certificate); err != nil {
-				return fmt.Errorf("failed to create TLS certificate: %w", err)
-			}
-			return nil
-		}
-		return fmt.Errorf("failed to query for existing TLS certificate: %w", err)
-	}
-
-	certificate.Spec.DeepCopyInto(&existingCertificate.Spec)
-	existingCertificate.Labels = certificate.Labels
-	if err := r.Update(ctx, &existingCertificate); err != nil {
-		return fmt.Errorf("failed to update TLS certificate: %w", err)
-	}
-	return nil
 }
