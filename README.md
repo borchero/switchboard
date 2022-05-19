@@ -61,6 +61,13 @@ spec:
         - name: nginx
   tls:
     secretName: www-tls-certificate
+    # You can also set TLS domains here, overwriting any hosts found in the routes:
+    # ---
+    # domains:
+    #   - main: example.com
+    #     sans:
+    #       - example.net
+    #       - www.example.com
 ```
 
 As this ingress is TLS-protected, Switchboard creates a certificate:

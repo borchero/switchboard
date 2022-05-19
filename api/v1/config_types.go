@@ -23,12 +23,12 @@ type Config struct {
 type IngressSet struct {
 	TargetService ServiceRef           `json:"targetService"`
 	Issuer        CertificateIssuerRef `json:"certificateIssuer"`
-	Selector      *IngressSelector     `json:"selector,omitempty"`
+	Selector      IngressSelector      `json:"selector,omitempty"`
 }
 
 // IngressSelector can be used to limit operations to ingresses with a specific class.
 type IngressSelector struct {
-	IngressClass string `json:"ingressClass"`
+	IngressClass *string `json:"ingressClass,omitempty"`
 }
 
 // ServiceRef uniquely describes a Kubernetes service.
