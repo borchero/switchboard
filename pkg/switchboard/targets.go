@@ -37,3 +37,8 @@ func (t Target) IP(ctx context.Context, client client.Client) (string, error) {
 	}
 	return targetIP, nil
 }
+
+// Matches returns whether the provided service is referenced by this target.
+func (t Target) Matches(service client.Object) bool {
+	return service.GetName() == t.name.Name && service.GetNamespace() == t.name.Namespace
+}

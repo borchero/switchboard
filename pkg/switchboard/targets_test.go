@@ -61,3 +61,19 @@ func TestIP(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, service.Status.LoadBalancer.Ingress[0].IP, ip)
 }
+
+func TestMatches(t *testing.T) {
+	target := NewTarget("my-service", "my-namespace")
+	assert.True(t, target.Matches(&v1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "my-service", Namespace: "my-namespace"},
+	}))
+	assert.False(t, target.Matches(&v1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "my-service", Namespace: "other-namespace"},
+	}))
+	assert.False(t, target.Matches(&v1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "other-service", Namespace: "my-namespace"},
+	}))
+	assert.False(t, target.Matches(&v1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "other-service", Namespace: "other-namespace"},
+	}))
+}

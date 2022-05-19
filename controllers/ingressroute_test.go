@@ -194,8 +194,8 @@ func runTest(t *testing.T, test testCase) {
 	} else {
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, test.DNSNames, certificate.Spec.DNSNames)
-		assert.Equal(t, reconciler.IngressConfig.Issuer.Kind, certificate.Spec.IssuerRef.Kind)
-		assert.Equal(t, reconciler.IngressConfig.Issuer.Name, certificate.Spec.IssuerRef.Name)
+		assert.Equal(t, reconciler.issuer.Kind, certificate.Spec.IssuerRef.Kind)
+		assert.Equal(t, reconciler.issuer.Name, certificate.Spec.IssuerRef.Name)
 		assert.Equal(t, test.Ingress.Spec.TLS.SecretName, certificate.Spec.SecretName)
 	}
 
@@ -227,21 +227,16 @@ func runReconciliation(
 	ingress traefik.IngressRoute,
 	service *v1.Service,
 ) *IngressRouteReconciler {
-	reconciler := IngressRouteReconciler{
-		Client: client,
-		Scheme: scheme,
-		Logger: zap.NewNop(),
-		IngressConfig: configv1.IngressSet{
-			TargetService: configv1.ServiceRef{
-				Name:      service.Name,
-				Namespace: service.Namespace,
-			},
-			Issuer: configv1.CertificateIssuerRef{
-				Kind: "ClusterIssuer",
-				Name: "issuer",
-			},
+	reconciler := NewIngressRouteReconciler(client, scheme, zap.NewNop(), configv1.IngressSet{
+		TargetService: configv1.ServiceRef{
+			Name:      service.Name,
+			Namespace: service.Namespace,
 		},
-	}
+		Issuer: configv1.CertificateIssuerRef{
+			Kind: "ClusterIssuer",
+			Name: "issuer",
+		},
+	})
 	_, err := reconciler.Reconcile(ctx, controllerruntime.Request{
 		NamespacedName: types.NamespacedName{Name: ingress.Name, Namespace: ingress.Namespace},
 	})

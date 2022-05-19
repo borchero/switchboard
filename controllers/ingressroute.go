@@ -27,15 +27,30 @@ import (
 const (
 	managedByAnnotationKey = "kubernetes.io/managed-by"
 	ingressAnnotationKey   = "kubernetes.io/ingress.class"
-	ignoreAnnotationKey    = "switchboard.borchero.com/ignore"
 )
 
 // IngressRouteReconciler reconciles an IngressRoute object.
 type IngressRouteReconciler struct {
 	client.Client
-	Scheme        *runtime.Scheme
-	Logger        *zap.Logger
-	IngressConfig configv1.IngressSet
+	scheme   *runtime.Scheme
+	logger   *zap.Logger
+	selector switchboard.Selector
+	target   switchboard.Target
+	issuer   cmmeta.ObjectReference
+}
+
+// NewIngressRouteReconciler creates a new IngressRouteReconciler.
+func NewIngressRouteReconciler(
+	client client.Client, scheme *runtime.Scheme, logger *zap.Logger, config configv1.IngressSet,
+) IngressRouteReconciler {
+	return IngressRouteReconciler{
+		Client:   client,
+		scheme:   scheme,
+		logger:   logger,
+		selector: switchboard.NewSelector(config.Selector.IngressClass),
+		target:   switchboard.NewTarget(config.TargetService.Name, config.TargetService.Namespace),
+		issuer:   cmmeta.ObjectReference{Name: config.Issuer.Name, Kind: config.Issuer.Kind},
+	}
 }
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -43,7 +58,7 @@ type IngressRouteReconciler struct {
 func (r *IngressRouteReconciler) Reconcile(
 	ctx context.Context, req ctrl.Request,
 ) (ctrl.Result, error) {
-	logger := r.Logger.With(zap.String("name", req.String()))
+	logger := r.logger.With(zap.String("name", req.String()))
 
 	// First, we retrieve the full resource
 	ingressRoute := traefik.IngressRoute{}
@@ -55,12 +70,8 @@ func (r *IngressRouteReconciler) Reconcile(
 	}
 
 	// Then, we check if the resource should be processed
-	ignore := ingressRoute.Annotations[ignoreAnnotationKey]
-	ingressClass := ingressRoute.Annotations[ingressAnnotationKey]
-	matchesSelector := r.IngressConfig.Selector == nil ||
-		r.IngressConfig.Selector.IngressClass == ingressClass
-	if ignore == "true" || !matchesSelector {
-		logger.Debug("ignoring ingress route", zap.String("ingressClass", ingressClass))
+	if !r.selector.Matches(ingressRoute.Annotations) {
+		logger.Debug("ignoring ingress route")
 		return ctrl.Result{}, nil
 	}
 	logger.Debug("reconciling ingress route")
@@ -77,11 +88,7 @@ func (r *IngressRouteReconciler) Reconcile(
 	}
 
 	// First, we attempt to update the DNS entries.
-	target := switchboard.NewTarget(
-		r.IngressConfig.TargetService.Name,
-		r.IngressConfig.TargetService.Namespace,
-	)
-	targetIP, err := target.IP(ctx, r.Client)
+	targetIP, err := r.target.IP(ctx, r.Client)
 	if err != nil {
 		logger.Error("failed to obtain target IP", zap.Error(err))
 		return ctrl.Result{}, err
@@ -138,15 +145,14 @@ func (r *IngressRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *IngressRouteReconciler) getAllIngressRoutes(service client.Object) []reconcile.Request {
 	// Check whether the service matches the configuration
-	if service.GetName() != r.IngressConfig.TargetService.Name ||
-		service.GetNamespace() != r.IngressConfig.TargetService.Namespace {
+	if !r.target.Matches(service) {
 		return []reconcile.Request{}
 	}
 
 	// Find all ingress routes that are associated with the target service
 	ingresses := traefik.IngressRouteList{}
 	if err := r.List(context.TODO(), &ingresses); err != nil {
-		r.Logger.Error("failed to list ingress routes upon service change", zap.Error(err))
+		r.logger.Error("failed to list ingress routes upon service change", zap.Error(err))
 		return []reconcile.Request{}
 	}
 
@@ -180,7 +186,7 @@ func (r *IngressRouteReconciler) createDNSEndpoint(
 		},
 	}
 
-	if err := ctrl.SetControllerReference(&route, &dnsEndpoint, r.Scheme); err != nil {
+	if err := ctrl.SetControllerReference(&route, &dnsEndpoint, r.scheme); err != nil {
 		return dnsEndpoint, fmt.Errorf(
 			"failed to set controller reference for DNS endpoint: %w", err,
 		)
@@ -202,14 +208,11 @@ func (r *IngressRouteReconciler) createTLSCertificate(
 		Spec: certmanager.CertificateSpec{
 			SecretName: route.Spec.TLS.SecretName,
 			DNSNames:   hosts.Hosts(),
-			IssuerRef: cmmeta.ObjectReference{
-				Name: r.IngressConfig.Issuer.Name,
-				Kind: r.IngressConfig.Issuer.Kind,
-			},
+			IssuerRef:  r.issuer,
 		},
 	}
 
-	if err := ctrl.SetControllerReference(&route, &certificate, r.Scheme); err != nil {
+	if err := ctrl.SetControllerReference(&route, &certificate, r.scheme); err != nil {
 		return certificate, fmt.Errorf(
 			"failed to set controller reference for TLS certificate: %w", err,
 		)
