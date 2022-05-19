@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	configv1 "github.com/borchero/switchboard/api/v1"
-	"github.com/borchero/switchboard/pkg/k8s"
 	"github.com/borchero/switchboard/pkg/switchboard"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
@@ -14,7 +12,6 @@ import (
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -24,11 +21,6 @@ import (
 	"sigs.k8s.io/external-dns/endpoint"
 )
 
-const (
-	managedByAnnotationKey = "kubernetes.io/managed-by"
-	ingressAnnotationKey   = "kubernetes.io/ingress.class"
-)
-
 // IngressRouteReconciler reconciles an IngressRoute object.
 type IngressRouteReconciler struct {
 	client.Client
@@ -36,6 +28,7 @@ type IngressRouteReconciler struct {
 	logger   *zap.Logger
 	selector switchboard.Selector
 	target   switchboard.Target
+	factory  *switchboard.Factory
 	issuer   cmmeta.ObjectReference
 }
 
@@ -48,8 +41,11 @@ func NewIngressRouteReconciler(
 		scheme:   scheme,
 		logger:   logger,
 		selector: switchboard.NewSelector(config.Selector.IngressClass),
-		target:   switchboard.NewTarget(config.TargetService.Name, config.TargetService.Namespace),
-		issuer:   cmmeta.ObjectReference{Name: config.Issuer.Name, Kind: config.Issuer.Kind},
+		target: switchboard.NewTarget(
+			client, config.TargetService.Name, config.TargetService.Namespace,
+		),
+		factory: switchboard.NewFactory(client, scheme),
+		issuer:  cmmeta.ObjectReference{Name: config.Issuer.Name, Kind: config.Issuer.Kind},
 	}
 }
 
@@ -88,17 +84,14 @@ func (r *IngressRouteReconciler) Reconcile(
 	}
 
 	// First, we attempt to update the DNS entries.
-	targetIP, err := r.target.IP(ctx, r.Client)
+	targetIP, err := r.target.IP(ctx)
 	if err != nil {
 		logger.Error("failed to obtain target IP", zap.Error(err))
 		return ctrl.Result{}, err
 	}
-	dnsEndpoint, err := r.createDNSEndpoint(ingressRoute, hosts, targetIP)
-	if err != nil {
-		logger.Error("failed to obtain DNS endpoint", zap.Error(err))
-		return ctrl.Result{}, err
-	}
-	if _, err := k8s.Upsert(ctx, r.Client, &dnsEndpoint); err != nil {
+	if err := r.factory.UpsertDNSEndpoint(
+		ctx, &ingressRoute, hosts.DNSEndpoints(targetIP, 300),
+	); err != nil {
 		logger.Error("failed to upsert DNS endpoint", zap.Error(err))
 		return ctrl.Result{}, err
 	}
@@ -106,12 +99,9 @@ func (r *IngressRouteReconciler) Reconcile(
 
 	// Then, we create the TLS certificate if required
 	if ingressRoute.Spec.TLS != nil && ingressRoute.Spec.TLS.SecretName != "" {
-		certificate, err := r.createTLSCertificate(ingressRoute, hosts)
-		if err != nil {
-			logger.Error("failed to obtain TLS certificate", zap.Error(err))
-			return ctrl.Result{}, err
-		}
-		if _, err := k8s.Upsert(ctx, r.Client, &certificate); err != nil {
+		if err := r.factory.UpsertCertificate(
+			ctx, &ingressRoute, r.issuer, ingressRoute.Spec.TLS.SecretName, hosts.Hosts(),
+		); err != nil {
 			if strings.Contains(err.Error(), "the object has been modified") {
 				logger.Debug("failed to upsert TLS certificate", zap.Error(err))
 			} else {
@@ -162,60 +152,4 @@ func (r *IngressRouteReconciler) getAllIngressRoutes(service client.Object) []re
 		requests[i].Namespace = item.Namespace
 	}
 	return requests
-}
-
-func (r *IngressRouteReconciler) createDNSEndpoint(
-	route traefik.IngressRoute, hosts *switchboard.HostAggregator, targetIP string,
-) (endpoint.DNSEndpoint, error) {
-	annotations := map[string]string{}
-	if ingressClass, ok := route.Annotations[ingressAnnotationKey]; ok {
-		annotations[ingressAnnotationKey] = ingressClass
-	}
-
-	dnsEndpoint := endpoint.DNSEndpoint{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        route.Name,
-			Namespace:   route.Namespace,
-			Annotations: annotations,
-			Labels: map[string]string{
-				managedByAnnotationKey: "switchboard",
-			},
-		},
-		Spec: endpoint.DNSEndpointSpec{
-			Endpoints: hosts.DNSEndpoints(targetIP, 300),
-		},
-	}
-
-	if err := ctrl.SetControllerReference(&route, &dnsEndpoint, r.scheme); err != nil {
-		return dnsEndpoint, fmt.Errorf(
-			"failed to set controller reference for DNS endpoint: %w", err,
-		)
-	}
-	return dnsEndpoint, nil
-}
-
-func (r *IngressRouteReconciler) createTLSCertificate(
-	route traefik.IngressRoute, hosts *switchboard.HostAggregator,
-) (certmanager.Certificate, error) {
-	certificate := certmanager.Certificate{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-tls", route.Name),
-			Namespace: route.Namespace,
-			Labels: map[string]string{
-				managedByAnnotationKey: "switchboard",
-			},
-		},
-		Spec: certmanager.CertificateSpec{
-			SecretName: route.Spec.TLS.SecretName,
-			DNSNames:   hosts.Hosts(),
-			IssuerRef:  r.issuer,
-		},
-	}
-
-	if err := ctrl.SetControllerReference(&route, &certificate, r.scheme); err != nil {
-		return certificate, fmt.Errorf(
-			"failed to set controller reference for TLS certificate: %w", err,
-		)
-	}
-	return certificate, nil
 }

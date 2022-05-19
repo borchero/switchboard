@@ -42,8 +42,8 @@ func TestIP(t *testing.T) {
 	require.Nil(t, err)
 
 	// Check whether we find the cluster IP
-	target := NewTarget(service.Name, service.Namespace)
-	ip, err := target.IP(ctx, client)
+	target := NewTarget(client, service.Name, service.Namespace)
+	ip, err := target.IP(ctx)
 	require.Nil(t, err)
 	assert.Equal(t, service.Spec.ClusterIP, ip)
 
@@ -57,13 +57,13 @@ func TestIP(t *testing.T) {
 	name := types.NamespacedName{Name: service.Name, Namespace: service.Namespace}
 	err = client.Get(ctx, name, &service)
 	require.Nil(t, err)
-	ip, err = target.IP(ctx, client)
+	ip, err = target.IP(ctx)
 	require.Nil(t, err)
 	assert.Equal(t, service.Status.LoadBalancer.Ingress[0].IP, ip)
 }
 
 func TestMatches(t *testing.T) {
-	target := NewTarget("my-service", "my-namespace")
+	target := NewTarget(nil, "my-service", "my-namespace")
 	assert.True(t, target.Matches(&v1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: "my-service", Namespace: "my-namespace"},
 	}))

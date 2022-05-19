@@ -67,12 +67,10 @@ func main() {
 		logger.Fatal("unable to create manager", zap.Error(err))
 	}
 
-	if err := (&controllers.IngressRouteReconciler{
-		Client:        manager.GetClient(),
-		Scheme:        manager.GetScheme(),
-		Logger:        logger,
-		IngressConfig: config.IngressConfig,
-	}).SetupWithManager(manager); err != nil {
+	controller := controllers.NewIngressRouteReconciler(
+		manager.GetClient(), manager.GetScheme(), logger, config.IngressConfig,
+	)
+	if err := controller.SetupWithManager(manager); err != nil {
 		logger.Fatal("unable to start ingress route controller", zap.Error(err))
 	}
 
