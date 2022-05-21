@@ -11,23 +11,21 @@ import (
 
 // Target represents a service whose external/internal IP should be used as target for DNS records.
 type Target struct {
-	client client.Client
-	name   types.NamespacedName
+	name types.NamespacedName
 }
 
 // NewTarget creates a new target from the service with the specified name in the given namespace.
-func NewTarget(client client.Client, name, namespace string) Target {
+func NewTarget(name, namespace string) Target {
 	return Target{
-		client: client,
-		name:   types.NamespacedName{Name: name, Namespace: namespace},
+		name: types.NamespacedName{Name: name, Namespace: namespace},
 	}
 }
 
 // IP returns the IP that should be used as target or an error if querying the IP fails.
-func (t Target) IP(ctx context.Context) (string, error) {
+func (t Target) IP(ctx context.Context, client client.Client) (string, error) {
 	// Get service
 	var service v1.Service
-	if err := t.client.Get(ctx, t.name, &service); err != nil {
+	if err := client.Get(ctx, t.name, &service); err != nil {
 		return "", fmt.Errorf("failed to query service: %w", err)
 	}
 
@@ -40,7 +38,7 @@ func (t Target) IP(ctx context.Context) (string, error) {
 	return targetIP, nil
 }
 
-// Matches returns whether the provided service is referenced by this target.
-func (t Target) Matches(service client.Object) bool {
-	return service.GetName() == t.name.Name && service.GetNamespace() == t.name.Namespace
+// NamespacedName returns the namespaced name of the target service.
+func (t Target) NamespacedName() types.NamespacedName {
+	return t.name
 }

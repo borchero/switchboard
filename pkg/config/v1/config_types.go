@@ -16,19 +16,29 @@ type Config struct {
 	metav1.TypeMeta                        `json:",inline"`
 	cfg.ControllerManagerConfigurationSpec `json:",inline"`
 
-	IngressConfig IngressSet `json:"ingressConfig"`
-}
-
-// IngressSet represents the configuration for a set of ingress resources.
-type IngressSet struct {
-	TargetService ServiceRef           `json:"targetService"`
-	Issuer        CertificateIssuerRef `json:"certificateIssuer"`
-	Selector      IngressSelector      `json:"selector,omitempty"`
+	Selector     IngressSelector    `json:"selector"`
+	Integrations IntegrationConfigs `json:"integrations"`
 }
 
 // IngressSelector can be used to limit operations to ingresses with a specific class.
 type IngressSelector struct {
 	IngressClass *string `json:"ingressClass,omitempty"`
+}
+
+// IntegrationConfigs describes the configurations for all integrations.
+type IntegrationConfigs struct {
+	ExternalDNS *ExternalDNSIntegrationConfig `json:"externalDNS"`
+	CertManager *CertManagerIntegrationConfig `json:"certManager"`
+}
+
+// ExternalDNSIntegrationConfig describes the configuration for the external-dns integration.
+type ExternalDNSIntegrationConfig struct {
+	Target ServiceRef `json:"target"`
+}
+
+// CertManagerIntegrationConfig describes the configuration for the cert-manager integration.
+type CertManagerIntegrationConfig struct {
+	Issuer IssuerRef `json:"issuer"`
 }
 
 // ServiceRef uniquely describes a Kubernetes service.
@@ -37,8 +47,8 @@ type ServiceRef struct {
 	Namespace string `json:"namespace"`
 }
 
-// CertificateIssuerRef uniquely describes a certificate issuer in Kubernetes.
-type CertificateIssuerRef struct {
+// IssuerRef uniquely references a cert-manager issuer.
+type IssuerRef struct {
 	Kind string `json:"kind"`
 	Name string `json:"name"`
 }

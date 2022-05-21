@@ -6,10 +6,12 @@ leaderElection:
   leaderElect: false
   resourceName: switchboard.borchero.com
   resourceNamespace: default
-ingressConfig:
-  targetService:
-    name: kube-dns
-    namespace: kube-system
-  certificateIssuer:
-    kind: ClusterIssuer
-    name: ca-issuer
+integrations:
+  externalDns:
+    target:
+      name: kube-dns
+      namespace: kube-system
+  certManager:
+    issuer:
+      kind: ClusterIssuer
+      name: ca-issuer
