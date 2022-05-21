@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/borchero/switchboard/pkg/k8s"
+	"github.com/borchero/switchboard/internal/k8s"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

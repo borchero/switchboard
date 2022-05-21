@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/borchero/switchboard/pkg/k8s"
-	"github.com/borchero/switchboard/pkg/switchboard"
+	"github.com/borchero/switchboard/internal/k8s"
+	"github.com/borchero/switchboard/internal/switchboard"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"

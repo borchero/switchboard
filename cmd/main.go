@@ -4,8 +4,8 @@ import (
 	"context"
 	"flag"
 
-	"github.com/borchero/switchboard/controllers"
-	configv1 "github.com/borchero/switchboard/pkg/config/v1"
+	configv1 "github.com/borchero/switchboard/internal/config/v1"
+	"github.com/borchero/switchboard/internal/controllers"
 	"github.com/borchero/zeus/pkg/zeus"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"

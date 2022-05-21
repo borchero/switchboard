@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/borchero/switchboard/internal/ext"
 	"github.com/borchero/switchboard/internal/k8tests"
-	"github.com/borchero/switchboard/pkg/ext"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"

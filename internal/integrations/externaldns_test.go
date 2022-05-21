@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/borchero/switchboard/internal/k8tests"
-	"github.com/borchero/switchboard/pkg/switchboard"
+	"github.com/borchero/switchboard/internal/switchboard"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/controller-runtime/pkg/client"

@@ -3,10 +3,10 @@ package controllers
 import (
 	"context"
 
-	configv1 "github.com/borchero/switchboard/pkg/config/v1"
-	"github.com/borchero/switchboard/pkg/ext"
-	"github.com/borchero/switchboard/pkg/integrations"
-	"github.com/borchero/switchboard/pkg/switchboard"
+	configv1 "github.com/borchero/switchboard/internal/config/v1"
+	"github.com/borchero/switchboard/internal/ext"
+	"github.com/borchero/switchboard/internal/integrations"
+	"github.com/borchero/switchboard/internal/switchboard"
 	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
 	"go.uber.org/zap"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"

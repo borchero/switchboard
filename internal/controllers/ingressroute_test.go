@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/k8tests"
-	configv1 "github.com/borchero/switchboard/pkg/config/v1"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

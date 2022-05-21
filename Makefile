@@ -37,11 +37,11 @@ test: ## Run tests
 
 .PHONY: build
 build: generate ## Build manager binary.
-	go build -o bin/manager main.go
+	go build -o bin/manager cmd/main.go
 
 .PHONY: run
 run: generate ## Run a controller from your host.
-	go run ./main.go --config dev/config.yaml
+	go run cmd/main.go --config dev/config.yaml
 
 #--------------------------------------------------------------------------------------------------
 ##@ Kubernetes
