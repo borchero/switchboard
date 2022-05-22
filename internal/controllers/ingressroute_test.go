@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	configv1 "github.com/borchero/switchboard/api/v1"
+	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/k8tests"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	controllerruntime "sigs.k8s.io/controller-runtime"
@@ -175,11 +174,16 @@ func runTest(t *testing.T, test testCase) {
 	defer shutdown()
 
 	// Create objects and run reconciliation
-	service := createService(ctx, t, client, namespace)
-	test.Ingress.Namespace = namespace
-	err := client.Create(ctx, &test.Ingress)
+	service := k8tests.DummyService("traefik", namespace, 80)
+	err := client.Create(ctx, &service)
 	require.Nil(t, err)
-	reconciler := runReconciliation(ctx, t, client, scheme, test.Ingress, service)
+
+	test.Ingress.Namespace = namespace
+	err = client.Create(ctx, &test.Ingress)
+	require.Nil(t, err)
+
+	config := createConfig(&service)
+	runReconciliation(ctx, t, client, test.Ingress, config)
 
 	// Check whether the outputs are valid
 	// 1) Certificate
@@ -194,8 +198,14 @@ func runTest(t *testing.T, test testCase) {
 	} else {
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, test.DNSNames, certificate.Spec.DNSNames)
-		assert.Equal(t, reconciler.issuer.Kind, certificate.Spec.IssuerRef.Kind)
-		assert.Equal(t, reconciler.issuer.Name, certificate.Spec.IssuerRef.Name)
+		assert.Equal(t,
+			config.Integrations.CertManager.Issuer.Kind,
+			certificate.Spec.IssuerRef.Kind,
+		)
+		assert.Equal(t,
+			config.Integrations.CertManager.Issuer.Name,
+			certificate.Spec.IssuerRef.Name,
+		)
 		assert.Equal(t, test.Ingress.Spec.TLS.SecretName, certificate.Spec.SecretName)
 	}
 
@@ -223,46 +233,31 @@ func runReconciliation(
 	ctx context.Context,
 	t *testing.T,
 	client client.Client,
-	scheme *runtime.Scheme,
 	ingress traefik.IngressRoute,
-	service *v1.Service,
-) *IngressRouteReconciler {
-	reconciler := NewIngressRouteReconciler(client, scheme, zap.NewNop(), configv1.IngressSet{
-		TargetService: configv1.ServiceRef{
-			Name:      service.Name,
-			Namespace: service.Namespace,
-		},
-		Issuer: configv1.CertificateIssuerRef{
-			Kind: "ClusterIssuer",
-			Name: "issuer",
-		},
-	})
+	config configv1.Config,
+) {
+	reconciler := NewIngressRouteReconciler(client, zap.NewNop(), config)
 	_, err := reconciler.Reconcile(ctx, controllerruntime.Request{
 		NamespacedName: types.NamespacedName{Name: ingress.Name, Namespace: ingress.Namespace},
 	})
 	require.Nil(t, err)
-	return &reconciler
 }
 
-func createService(
-	ctx context.Context, t *testing.T, client client.Client, namespace string,
-) *v1.Service {
-	service := v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "traefik",
-			Namespace: namespace,
-		},
-		Spec: v1.ServiceSpec{
-			Selector: map[string]string{
-				"app.kubernetes.io/name": "notfound",
+func createConfig(service *v1.Service) configv1.Config {
+	return configv1.Config{
+		Integrations: configv1.IntegrationConfigs{
+			ExternalDNS: &configv1.ExternalDNSIntegrationConfig{
+				Target: configv1.ServiceRef{
+					Name:      service.Name,
+					Namespace: service.Namespace,
+				},
 			},
-			Ports: []v1.ServicePort{{
-				Port: 80,
-				Name: "http",
-			}},
+			CertManager: &configv1.CertManagerIntegrationConfig{
+				Issuer: configv1.IssuerRef{
+					Kind: "ClusterIssuer",
+					Name: "my-issuer",
+				},
+			},
 		},
 	}
-	err := client.Create(ctx, &service)
-	require.Nil(t, err)
-	return &service
 }
