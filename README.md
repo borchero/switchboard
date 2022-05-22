@@ -30,8 +30,8 @@ tools (_integrations_):
   Traefik instance. External-dns will pick up the `DNSEndpoint` and add appropriate DNS records in
   your configured provider.
 
-Switchboard allows you to freely choose which integrations you want to use. Thus, you can easily
-adopt Switchboard incrementally.
+Switchboard allows you to freely choose which integrations you want to use and can, thus, be easily
+adopted incrementally.
 
 _Note: This version of Switchboard is a complete rewrite of Switchboard v0.1 which will not be
 maintained anymore. Please refer to the appropriate tags in this repository if you still need to
