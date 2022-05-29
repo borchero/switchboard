@@ -56,8 +56,8 @@ func (e *externalDNS) UpdateResource(
 		return nil
 	}
 
-	// Get the IP of the target service
-	ip, err := e.target.IP(ctx, e.client)
+	// Get the IPs of the target service
+	ips, err := e.target.IPs(ctx, e.client)
 	if err != nil {
 		return fmt.Errorf("failed to query IP for DNS A record: %w", err)
 	}
@@ -70,7 +70,7 @@ func (e *externalDNS) UpdateResource(
 			return nil
 		}
 		// Spec
-		resource.Spec.Endpoints = e.endpoints(info.Hosts, ip)
+		resource.Spec.Endpoints = e.endpoints(info.Hosts, ips)
 		return nil
 	}); err != nil {
 		return fmt.Errorf("failed to upsert DNS endpoint: %w", err)
@@ -89,15 +89,29 @@ func (e *externalDNS) objectMeta(owner metav1.Object) metav1.ObjectMeta {
 	}
 }
 
-func (e *externalDNS) endpoints(hosts []string, target string) []*endpoint.Endpoint {
+func (e *externalDNS) endpoints(hosts []string, targets []string) []*endpoint.Endpoint {
+	// Get the records for the target service
+	targetRecords := make(map[string][]string)
+	for _, target := range targets {
+		rtype := e.recordType(target)
+		if _, ok := targetRecords[rtype]; ok {
+			targetRecords[rtype] = append(targetRecords[rtype], target)
+		} else {
+			targetRecords[rtype] = []string{target}
+		}
+	}
+
+	// Create the endpoints
 	endpoints := make([]*endpoint.Endpoint, 0, len(hosts))
 	for _, host := range hosts {
-		endpoints = append(endpoints, &endpoint.Endpoint{
-			DNSName:    host,
-			Targets:    []string{target},
-			RecordType: e.recordType(target),
-			RecordTTL:  e.ttl,
-		})
+		for rtype, values := range targetRecords {
+			endpoints = append(endpoints, &endpoint.Endpoint{
+				DNSName:    host,
+				Targets:    values,
+				RecordType: rtype,
+				RecordTTL:  e.ttl,
+			})
+		}
 	}
 	return endpoints
 }
