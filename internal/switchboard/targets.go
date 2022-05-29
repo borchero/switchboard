@@ -21,21 +21,26 @@ func NewTarget(name, namespace string) Target {
 	}
 }
 
-// IP returns the IP that should be used as target or an error if querying the IP fails.
-func (t Target) IP(ctx context.Context, client client.Client) (string, error) {
+// IPs returns the IP v4/v6 addresses that should be used as targets or an error if querying the
+// IP addresses fails.
+func (t Target) IPs(ctx context.Context, client client.Client) ([]string, error) {
 	// Get service
 	var service v1.Service
 	if err := client.Get(ctx, t.name, &service); err != nil {
-		return "", fmt.Errorf("failed to query service: %w", err)
+		return nil, fmt.Errorf("failed to query service: %w", err)
 	}
 
-	// Get IP: try to get load balancer IP, fall back to cluster IP
-	targetIP := service.Spec.ClusterIP
-	lbIngress := service.Status.LoadBalancer.Ingress
-	if len(lbIngress) > 0 {
-		targetIP = lbIngress[0].IP
+	// Get IPs: try to get load balancer IPs, fall back to cluster IPs
+	targets := make([]string, 0)
+	for _, ingress := range service.Status.LoadBalancer.Ingress {
+		if ingress.IP != "" {
+			targets = append(targets, ingress.IP)
+		}
 	}
-	return targetIP, nil
+	if len(targets) == 0 {
+		targets = append(targets, service.Spec.ClusterIPs...)
+	}
+	return targets, nil
 }
 
 // NamespacedName returns the namespaced name of the target service.

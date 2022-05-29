@@ -68,7 +68,7 @@ func TestExternalDNSEndpoints(t *testing.T) {
 	integration := externalDNS{ttl: 250}
 	hosts := []string{"example.com", "www.example.com"}
 
-	endpoints := integration.endpoints(hosts, "127.0.0.1")
+	endpoints := integration.endpoints(hosts, []string{"127.0.0.1"})
 	assert.Len(t, endpoints, 2)
 	for _, ep := range endpoints {
 		assert.ElementsMatch(t, ep.Targets, []string{"127.0.0.1"})
@@ -77,13 +77,28 @@ func TestExternalDNSEndpoints(t *testing.T) {
 		assert.Contains(t, hosts, ep.DNSName)
 	}
 
-	endpoints = integration.endpoints(hosts, "::FFFF:C0A8:1")
+	endpoints = integration.endpoints(hosts, []string{"2001:db8::1"})
 	assert.Len(t, endpoints, 2)
 	for _, ep := range endpoints {
-		assert.ElementsMatch(t, ep.Targets, []string{"::FFFF:C0A8:1"})
+		assert.ElementsMatch(t, ep.Targets, []string{"2001:db8::1"})
 		assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
 		assert.Equal(t, ep.RecordType, "AAAA")
 		assert.Contains(t, hosts, ep.DNSName)
+	}
+
+	endpoints = integration.endpoints(hosts, []string{"127.0.0.1", "2001:db8::1"})
+	assert.Len(t, endpoints, 4)
+	for _, ep := range endpoints {
+		if ep.RecordType == "A" {
+			assert.ElementsMatch(t, ep.Targets, []string{"127.0.0.1"})
+			assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
+			assert.Contains(t, hosts, ep.DNSName)
+		} else {
+			assert.ElementsMatch(t, ep.Targets, []string{"2001:db8::1"})
+			assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
+			assert.Equal(t, ep.RecordType, "AAAA")
+			assert.Contains(t, hosts, ep.DNSName)
+		}
 	}
 }
 
@@ -91,7 +106,7 @@ func TestExternalDNSRecordType(t *testing.T) {
 	integration := externalDNS{ttl: 250}
 	assert.Equal(t, "A", integration.recordType("127.0.0.1"))
 	assert.Equal(t, "AAAA", integration.recordType("::FFFF:C0A8:1"))
-	assert.Equal(t, "AAAA", integration.recordType("0000:0000:0000:0000:0000:FFFF:C0A8:1"))
+	assert.Equal(t, "AAAA", integration.recordType("2001:db8::1"))
 }
 
 //-------------------------------------------------------------------------------------------------

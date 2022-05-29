@@ -26,9 +26,9 @@ func TestIP(t *testing.T) {
 
 	// Check whether we find the cluster IP
 	target := NewTarget(service.Name, service.Namespace)
-	ip, err := target.IP(ctx, ctrlClient)
+	ips, err := target.IPs(ctx, ctrlClient)
 	require.Nil(t, err)
-	assert.Equal(t, service.Spec.ClusterIP, ip)
+	assert.ElementsMatch(t, service.Spec.ClusterIPs, ips)
 
 	// Update the service to provide a load balancer
 	service.Spec.Type = "LoadBalancer"
@@ -40,9 +40,9 @@ func TestIP(t *testing.T) {
 	name := client.ObjectKeyFromObject(&service)
 	err = ctrlClient.Get(ctx, name, &service)
 	require.Nil(t, err)
-	ip, err = target.IP(ctx, ctrlClient)
+	ips, err = target.IPs(ctx, ctrlClient)
 	require.Nil(t, err)
-	assert.Equal(t, service.Status.LoadBalancer.Ingress[0].IP, ip)
+	assert.ElementsMatch(t, []string{service.Status.LoadBalancer.Ingress[0].IP}, ips)
 }
 
 func TestNamespacedName(t *testing.T) {
