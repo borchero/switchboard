@@ -3,6 +3,7 @@ module github.com/borchero/switchboard
 go 1.18
 
 require (
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/borchero/zeus v1.0.0
 	github.com/google/uuid v1.3.0
 	github.com/jetstack/cert-manager v1.7.2
