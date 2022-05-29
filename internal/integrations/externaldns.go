@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/borchero/switchboard/internal/k8s"
 	"github.com/borchero/switchboard/internal/switchboard"
 	v1 "k8s.io/api/core/v1"
@@ -94,9 +95,16 @@ func (e *externalDNS) endpoints(hosts []string, target string) []*endpoint.Endpo
 		endpoints = append(endpoints, &endpoint.Endpoint{
 			DNSName:    host,
 			Targets:    []string{target},
-			RecordType: "A",
+			RecordType: e.recordType(target),
 			RecordTTL:  e.ttl,
 		})
 	}
 	return endpoints
+}
+
+func (e *externalDNS) recordType(target string) string {
+	if govalidator.IsIPv4(target) {
+		return "A"
+	}
+	return "AAAA"
 }
