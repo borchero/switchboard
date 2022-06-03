@@ -51,7 +51,10 @@ func main() {
 	}
 
 	// Create the controllers
-	controller := controllers.NewIngressRouteReconciler(manager.GetClient(), logger, config)
+	controller, err := controllers.NewIngressRouteReconciler(manager.GetClient(), logger, config)
+	if err != nil {
+		logger.Fatal("unable to initialize ingress route controller", zap.Error(err))
+	}
 	if err := controller.SetupWithManager(manager); err != nil {
 		logger.Fatal("unable to start ingress route controller", zap.Error(err))
 	}

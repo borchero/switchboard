@@ -236,8 +236,9 @@ func runReconciliation(
 	ingress traefik.IngressRoute,
 	config configv1.Config,
 ) {
-	reconciler := NewIngressRouteReconciler(client, zap.NewNop(), config)
-	_, err := reconciler.Reconcile(ctx, controllerruntime.Request{
+	reconciler, err := NewIngressRouteReconciler(client, zap.NewNop(), config)
+	require.Nil(t, err)
+	_, err = reconciler.Reconcile(ctx, controllerruntime.Request{
 		NamespacedName: types.NamespacedName{Name: ingress.Name, Namespace: ingress.Namespace},
 	})
 	require.Nil(t, err)
@@ -247,7 +248,7 @@ func createConfig(service *v1.Service) configv1.Config {
 	return configv1.Config{
 		Integrations: configv1.IntegrationConfigs{
 			ExternalDNS: &configv1.ExternalDNSIntegrationConfig{
-				Target: configv1.ServiceRef{
+				TargetService: &configv1.ServiceRef{
 					Name:      service.Name,
 					Namespace: service.Namespace,
 				},

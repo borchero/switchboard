@@ -35,10 +35,14 @@ func (*externalDNS) OwnedResource() client.Object {
 }
 
 func (e *externalDNS) WatchedObject() client.Object {
+	name := e.target.NamespacedName()
+	if name == nil {
+		return nil
+	}
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      e.target.NamespacedName().Name,
-			Namespace: e.target.NamespacedName().Namespace,
+			Name:      name.Name,
+			Namespace: name.Namespace,
 		},
 	}
 }

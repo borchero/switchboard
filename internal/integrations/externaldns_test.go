@@ -13,7 +13,7 @@ import (
 )
 
 func TestExternalDNSWatchedObject(t *testing.T) {
-	integration := NewExternalDNS(nil, switchboard.NewTarget("my-name", "my-namespace"))
+	integration := NewExternalDNS(nil, switchboard.NewServiceTarget("my-name", "my-namespace"))
 	obj := integration.WatchedObject()
 	assert.Equal(t, "my-name", obj.GetName())
 	assert.Equal(t, "my-namespace", obj.GetNamespace())
@@ -31,7 +31,7 @@ func TestExternalDNSUpdateResource(t *testing.T) {
 	owner := k8tests.DummyService("my-service", namespace, 80)
 	err := client.Create(ctx, &owner)
 	require.Nil(t, err)
-	integration := NewExternalDNS(client, switchboard.NewTarget(owner.Name, namespace))
+	integration := NewExternalDNS(client, switchboard.NewServiceTarget(owner.Name, namespace))
 
 	// No resource should be created if no hosts are provided
 	info := IngressInfo{}

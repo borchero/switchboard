@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/ext"
 	"github.com/borchero/switchboard/internal/integrations"
@@ -17,25 +19,39 @@ import (
 
 func integrationsFromConfig(
 	config configv1.Config, client client.Client,
-) []integrations.Integration {
+) ([]integrations.Integration, error) {
 	result := make([]integrations.Integration, 0)
+	externalDNS := config.Integrations.ExternalDNS
 	if config.Integrations.ExternalDNS != nil {
-		result = append(result, integrations.NewExternalDNS(
-			client, switchboard.NewTarget(
-				config.Integrations.ExternalDNS.Target.Name,
-				config.Integrations.ExternalDNS.Target.Namespace,
-			),
-		))
+		if (externalDNS.TargetService == nil) == (len(externalDNS.TargetIPs) == 0) {
+			return nil, fmt.Errorf(
+				"exactly one of `targetService` and `targetIPs` must be set for external-dns",
+			)
+		}
+		if externalDNS.TargetService != nil {
+			result = append(result, integrations.NewExternalDNS(
+				client, switchboard.NewServiceTarget(
+					externalDNS.TargetService.Name,
+					externalDNS.TargetService.Namespace,
+				),
+			))
+		} else {
+			result = append(result, integrations.NewExternalDNS(
+				client, switchboard.NewStaticTarget(externalDNS.TargetIPs...),
+			))
+		}
 	}
-	if config.Integrations.CertManager != nil {
+
+	certManager := config.Integrations.CertManager
+	if certManager != nil {
 		result = append(result, integrations.NewCertManager(
 			client, cmmeta.ObjectReference{
-				Kind: config.Integrations.CertManager.Issuer.Kind,
-				Name: config.Integrations.CertManager.Issuer.Name,
+				Kind: certManager.Issuer.Kind,
+				Name: certManager.Issuer.Name,
 			},
 		))
 	}
-	return result
+	return result, nil
 }
 
 func builderWithIntegrations(
