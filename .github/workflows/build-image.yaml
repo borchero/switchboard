@@ -24,6 +24,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
+            type=ref,event=branch
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
@@ -39,5 +40,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.ref_type == 'tag' }}
+          push:
+            ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name ==
+            'main') }}
           tags: ${{ steps.meta.outputs.tags }}
