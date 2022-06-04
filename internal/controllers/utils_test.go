@@ -6,6 +6,7 @@ import (
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/k8tests"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIntegrationsFromConfig(t *testing.T) {
@@ -15,13 +16,15 @@ func TestIntegrationsFromConfig(t *testing.T) {
 
 	// Test all configurations of integrations
 	config := configv1.Config{}
-	integrations := integrationsFromConfig(config, client)
+	integrations, err := integrationsFromConfig(config, client)
+	require.Nil(t, err)
 	assert.Len(t, integrations, 0)
 
 	config.Integrations.ExternalDNS = &configv1.ExternalDNSIntegrationConfig{
-		Target: configv1.ServiceRef{Name: "my-service", Namespace: "my-namespace"},
+		TargetService: &configv1.ServiceRef{Name: "my-service", Namespace: "my-namespace"},
 	}
-	integrations = integrationsFromConfig(config, client)
+	integrations, err = integrationsFromConfig(config, client)
+	require.Nil(t, err)
 	assert.Len(t, integrations, 1)
 	assert.Equal(t, "external-dns", integrations[0].Name())
 
@@ -29,13 +32,26 @@ func TestIntegrationsFromConfig(t *testing.T) {
 	config.Integrations.CertManager = &configv1.CertManagerIntegrationConfig{
 		Issuer: configv1.IssuerRef{Kind: "ClusterIssuer", Name: "my-issuer"},
 	}
-	integrations = integrationsFromConfig(config, client)
+	integrations, err = integrationsFromConfig(config, client)
+	require.Nil(t, err)
 	assert.Len(t, integrations, 1)
 	assert.Equal(t, "cert-manager", integrations[0].Name())
 
 	config.Integrations.ExternalDNS = &configv1.ExternalDNSIntegrationConfig{
-		Target: configv1.ServiceRef{Name: "my-service", Namespace: "my-namespace"},
+		TargetIPs: []string{"127.0.0.1"},
 	}
-	integrations = integrationsFromConfig(config, client)
+	integrations, err = integrationsFromConfig(config, client)
+	require.Nil(t, err)
 	assert.Len(t, integrations, 2)
+
+	// Must fail if external DNS is not configured correctly
+	config.Integrations.ExternalDNS = &configv1.ExternalDNSIntegrationConfig{}
+	_, err = integrationsFromConfig(config, client)
+	require.NotNil(t, err)
+
+	config.Integrations.ExternalDNS = &configv1.ExternalDNSIntegrationConfig{
+		TargetIPs: []string{},
+	}
+	_, err = integrationsFromConfig(config, client)
+	require.NotNil(t, err)
 }

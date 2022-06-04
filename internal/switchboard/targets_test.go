@@ -11,7 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func TestIP(t *testing.T) {
+func TestServiceTargetIP(t *testing.T) {
 	// Setup
 	ctx := context.Background()
 	scheme := k8tests.NewScheme()
@@ -25,7 +25,7 @@ func TestIP(t *testing.T) {
 	require.Nil(t, err)
 
 	// Check whether we find the cluster IP
-	target := NewTarget(service.Name, service.Namespace)
+	target := NewServiceTarget(service.Name, service.Namespace)
 	ips, err := target.IPs(ctx, ctrlClient)
 	require.Nil(t, err)
 	assert.ElementsMatch(t, service.Spec.ClusterIPs, ips)
@@ -45,9 +45,18 @@ func TestIP(t *testing.T) {
 	assert.ElementsMatch(t, []string{service.Status.LoadBalancer.Ingress[0].IP}, ips)
 }
 
-func TestNamespacedName(t *testing.T) {
-	target := NewTarget("my-service", "my-namespace")
+func TestServiceTargetNamespacedName(t *testing.T) {
+	target := NewServiceTarget("my-service", "my-namespace")
 	name := target.NamespacedName()
 	assert.Equal(t, "my-service", name.Name)
 	assert.Equal(t, "my-namespace", name.Namespace)
+}
+
+func TestStaticTargetIPs(t *testing.T) {
+	ctx := context.Background()
+	expectedIPs := []string{"127.0.0.1", "2001:db8::1"}
+	target := NewStaticTarget(expectedIPs...)
+	ips, err := target.IPs(ctx, nil)
+	require.Nil(t, err)
+	assert.ElementsMatch(t, expectedIPs, ips)
 }

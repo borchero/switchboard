@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/ext"
@@ -25,13 +26,17 @@ type IngressRouteReconciler struct {
 // NewIngressRouteReconciler creates a new IngressRouteReconciler.
 func NewIngressRouteReconciler(
 	client client.Client, logger *zap.Logger, config configv1.Config,
-) IngressRouteReconciler {
+) (IngressRouteReconciler, error) {
+	integrations, err := integrationsFromConfig(config, client)
+	if err != nil {
+		return IngressRouteReconciler{}, fmt.Errorf("failed to initialize integrations: %s", err)
+	}
 	return IngressRouteReconciler{
 		Client:       client,
 		logger:       logger,
 		selector:     switchboard.NewSelector(config.Selector.IngressClass),
-		integrations: integrationsFromConfig(config, client),
-	}
+		integrations: integrations,
+	}, nil
 }
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to

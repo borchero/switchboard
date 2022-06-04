@@ -32,8 +32,10 @@ type IntegrationConfigs struct {
 }
 
 // ExternalDNSIntegrationConfig describes the configuration for the external-dns integration.
+// Exactly one of target and target IPs should be set.
 type ExternalDNSIntegrationConfig struct {
-	Target ServiceRef `json:"target"`
+	TargetService *ServiceRef `json:"targetService,omitempty"`
+	TargetIPs     []string    `json:"targetIPs,omitempty"`
 }
 
 // CertManagerIntegrationConfig describes the configuration for the cert-manager integration.

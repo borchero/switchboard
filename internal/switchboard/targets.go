@@ -9,21 +9,33 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Target represents a service whose external/internal IP should be used as target for DNS records.
-type Target struct {
+// Target is a type which allows to retrieve a potentially dynamically changing IP from Kubernetes.
+type Target interface {
+	// IPs returns the IPv4/IPv6 addresses that should be used as targets or an error if the IP
+	// addresses cannot be retrieved.
+	IPs(ctx context.Context, client client.Client) ([]string, error)
+	// NamespacedName returns the namespaced name of the dynamic target service or none if the IP
+	// is not retrieved dynamically.
+	NamespacedName() *types.NamespacedName
+}
+
+//-------------------------------------------------------------------------------------------------
+// SERVICE TARGET
+//-------------------------------------------------------------------------------------------------
+
+type serviceTarget struct {
 	name types.NamespacedName
 }
 
-// NewTarget creates a new target from the service with the specified name in the given namespace.
-func NewTarget(name, namespace string) Target {
-	return Target{
+// NewServiceTarget creates a new target which dynamically sources the IP from the provided
+// Kubernetes service.
+func NewServiceTarget(name, namespace string) Target {
+	return serviceTarget{
 		name: types.NamespacedName{Name: name, Namespace: namespace},
 	}
 }
 
-// IPs returns the IP v4/v6 addresses that should be used as targets or an error if querying the
-// IP addresses fails.
-func (t Target) IPs(ctx context.Context, client client.Client) ([]string, error) {
+func (t serviceTarget) IPs(ctx context.Context, client client.Client) ([]string, error) {
 	// Get service
 	var service v1.Service
 	if err := client.Get(ctx, t.name, &service); err != nil {
@@ -43,7 +55,28 @@ func (t Target) IPs(ctx context.Context, client client.Client) ([]string, error)
 	return targets, nil
 }
 
-// NamespacedName returns the namespaced name of the target service.
-func (t Target) NamespacedName() types.NamespacedName {
-	return t.name
+func (t serviceTarget) NamespacedName() *types.NamespacedName {
+	return &t.name
+}
+
+//-------------------------------------------------------------------------------------------------
+// STATIC TARGET
+//-------------------------------------------------------------------------------------------------
+
+type staticTarget struct {
+	ips []string
+}
+
+// NewStaticTarget creates a new target which provides the given static IPs. IPs may be IPv4 or
+// IPv6 addresses (and any combination thereof).
+func NewStaticTarget(ips ...string) Target {
+	return staticTarget{ips}
+}
+
+func (t staticTarget) IPs(ctx context.Context, client client.Client) ([]string, error) {
+	return t.ips, nil
+}
+
+func (t staticTarget) NamespacedName() *types.NamespacedName {
+	return nil
 }
