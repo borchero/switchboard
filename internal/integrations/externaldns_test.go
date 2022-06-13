@@ -100,6 +100,15 @@ func TestExternalDNSEndpoints(t *testing.T) {
 			assert.Contains(t, hosts, ep.DNSName)
 		}
 	}
+
+	endpoints = integration.endpoints(hosts, []string{"example.lb.identifier.amazonaws.com"})
+	assert.Len(t, endpoints, 2)
+	for _, ep := range endpoints {
+		assert.ElementsMatch(t, ep.Targets, []string{"example.lb.identifier.amazonaws.com"})
+		assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
+		assert.Equal(t, ep.RecordType, "CNAME")
+		assert.Contains(t, hosts, ep.DNSName)
+	}
 }
 
 func TestExternalDNSRecordType(t *testing.T) {
@@ -107,6 +116,7 @@ func TestExternalDNSRecordType(t *testing.T) {
 	assert.Equal(t, "A", integration.recordType("127.0.0.1"))
 	assert.Equal(t, "AAAA", integration.recordType("::FFFF:C0A8:1"))
 	assert.Equal(t, "AAAA", integration.recordType("2001:db8::1"))
+	assert.Equal(t, "CNAME", integration.recordType("example.lb.identifier.amazonaws.com"))
 }
 
 //-------------------------------------------------------------------------------------------------

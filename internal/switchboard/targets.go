@@ -11,9 +11,9 @@ import (
 
 // Target is a type which allows to retrieve a potentially dynamically changing IP from Kubernetes.
 type Target interface {
-	// IPs returns the IPv4/IPv6 addresses that should be used as targets or an error if the IP
-	// addresses cannot be retrieved.
-	IPs(ctx context.Context, client client.Client) ([]string, error)
+	// Targets returns the IPv4/IPv6 addresses or hostnames that should be used as targets or an
+	// error if the addresses/hostnames cannot be retrieved.
+	Targets(ctx context.Context, client client.Client) ([]string, error)
 	// NamespacedName returns the namespaced name of the dynamic target service or none if the IP
 	// is not retrieved dynamically.
 	NamespacedName() *types.NamespacedName
@@ -35,18 +35,21 @@ func NewServiceTarget(name, namespace string) Target {
 	}
 }
 
-func (t serviceTarget) IPs(ctx context.Context, client client.Client) ([]string, error) {
+func (t serviceTarget) Targets(ctx context.Context, client client.Client) ([]string, error) {
 	// Get service
 	var service v1.Service
 	if err := client.Get(ctx, t.name, &service); err != nil {
 		return nil, fmt.Errorf("failed to query service: %w", err)
 	}
 
-	// Get IPs: try to get load balancer IPs, fall back to cluster IPs
+	// Get IPs: try to get load balancer IPs/hostnames, fall back to cluster IPs
 	targets := make([]string, 0)
 	for _, ingress := range service.Status.LoadBalancer.Ingress {
 		if ingress.IP != "" {
 			targets = append(targets, ingress.IP)
+		}
+		if ingress.Hostname != "" {
+			targets = append(targets, ingress.Hostname)
 		}
 	}
 	if len(targets) == 0 {
@@ -73,7 +76,7 @@ func NewStaticTarget(ips ...string) Target {
 	return staticTarget{ips}
 }
 
-func (t staticTarget) IPs(ctx context.Context, client client.Client) ([]string, error) {
+func (t staticTarget) Targets(ctx context.Context, client client.Client) ([]string, error) {
 	return t.ips, nil
 }
 

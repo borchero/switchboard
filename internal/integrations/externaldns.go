@@ -61,7 +61,7 @@ func (e *externalDNS) UpdateResource(
 	}
 
 	// Get the IPs of the target service
-	ips, err := e.target.IPs(ctx, e.client)
+	targets, err := e.target.Targets(ctx, e.client)
 	if err != nil {
 		return fmt.Errorf("failed to query IP for DNS A record: %w", err)
 	}
@@ -74,7 +74,7 @@ func (e *externalDNS) UpdateResource(
 			return nil
 		}
 		// Spec
-		resource.Spec.Endpoints = e.endpoints(info.Hosts, ips)
+		resource.Spec.Endpoints = e.endpoints(info.Hosts, targets)
 		return nil
 	}); err != nil {
 		return fmt.Errorf("failed to upsert DNS endpoint: %w", err)
@@ -98,11 +98,7 @@ func (e *externalDNS) endpoints(hosts []string, targets []string) []*endpoint.En
 	targetRecords := make(map[string][]string)
 	for _, target := range targets {
 		rtype := e.recordType(target)
-		if _, ok := targetRecords[rtype]; ok {
-			targetRecords[rtype] = append(targetRecords[rtype], target)
-		} else {
-			targetRecords[rtype] = []string{target}
-		}
+		targetRecords[rtype] = append(targetRecords[rtype], target)
 	}
 
 	// Create the endpoints
@@ -124,5 +120,8 @@ func (e *externalDNS) recordType(target string) string {
 	if govalidator.IsIPv4(target) {
 		return "A"
 	}
-	return "AAAA"
+	if govalidator.IsIPv6(target) {
+		return "AAAA"
+	}
+	return "CNAME"
 }

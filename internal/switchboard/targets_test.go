@@ -26,9 +26,9 @@ func TestServiceTargetIP(t *testing.T) {
 
 	// Check whether we find the cluster IP
 	target := NewServiceTarget(service.Name, service.Namespace)
-	ips, err := target.IPs(ctx, ctrlClient)
+	targets, err := target.Targets(ctx, ctrlClient)
 	require.Nil(t, err)
-	assert.ElementsMatch(t, service.Spec.ClusterIPs, ips)
+	assert.ElementsMatch(t, service.Spec.ClusterIPs, targets)
 
 	// Update the service to provide a load balancer
 	service.Spec.Type = "LoadBalancer"
@@ -40,9 +40,9 @@ func TestServiceTargetIP(t *testing.T) {
 	name := client.ObjectKeyFromObject(&service)
 	err = ctrlClient.Get(ctx, name, &service)
 	require.Nil(t, err)
-	ips, err = target.IPs(ctx, ctrlClient)
+	targets, err = target.Targets(ctx, ctrlClient)
 	require.Nil(t, err)
-	assert.ElementsMatch(t, []string{service.Status.LoadBalancer.Ingress[0].IP}, ips)
+	assert.ElementsMatch(t, []string{service.Status.LoadBalancer.Ingress[0].IP}, targets)
 }
 
 func TestServiceTargetNamespacedName(t *testing.T) {
@@ -56,7 +56,7 @@ func TestStaticTargetIPs(t *testing.T) {
 	ctx := context.Background()
 	expectedIPs := []string{"127.0.0.1", "2001:db8::1"}
 	target := NewStaticTarget(expectedIPs...)
-	ips, err := target.IPs(ctx, nil)
+	ips, err := target.Targets(ctx, nil)
 	require.Nil(t, err)
 	assert.ElementsMatch(t, expectedIPs, ips)
 }
