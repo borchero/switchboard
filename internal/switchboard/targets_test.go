@@ -8,10 +8,11 @@ import (
 	"github.com/borchero/switchboard/internal/k8tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func TestServiceTargetIP(t *testing.T) {
+func TestServiceTargetTargets(t *testing.T) {
 	// Setup
 	ctx := context.Background()
 	scheme := k8tests.NewScheme()
@@ -43,6 +44,53 @@ func TestServiceTargetIP(t *testing.T) {
 	targets, err = target.Targets(ctx, ctrlClient)
 	require.Nil(t, err)
 	assert.ElementsMatch(t, []string{service.Status.LoadBalancer.Ingress[0].IP}, targets)
+}
+
+func TestServiceTargetTargetsFromService(t *testing.T) {
+	target := serviceTarget{}
+	service := v1.Service{
+		Spec: v1.ServiceSpec{ClusterIPs: []string{"10.0.0.5"}},
+	}
+
+	// Source cluster IP
+	targets := target.targetsFromService(service)
+	assert.ElementsMatch(t, service.Spec.ClusterIPs, targets)
+
+	// Source multiple cluster IPs
+	service.Spec.ClusterIPs = []string{"10.0.0.5", "2001:db8::1"}
+	targets = target.targetsFromService(service)
+	assert.ElementsMatch(t, service.Spec.ClusterIPs, targets)
+
+	// Source IP from status
+	service.Status.LoadBalancer.Ingress = []v1.LoadBalancerIngress{{
+		IP: "192.168.5.5",
+	}}
+	targets = target.targetsFromService(service)
+	assert.ElementsMatch(t, []string{"192.168.5.5"}, targets)
+
+	// Source hostname from status
+	service.Status.LoadBalancer.Ingress = []v1.LoadBalancerIngress{{
+		Hostname: "example.lb.identifier.amazonaws.com",
+	}}
+	targets = target.targetsFromService(service)
+	assert.ElementsMatch(t, []string{"example.lb.identifier.amazonaws.com"}, targets)
+
+	// Ensure hostname takes precedence
+	service.Status.LoadBalancer.Ingress = []v1.LoadBalancerIngress{{
+		IP:       "192.168.5.5",
+		Hostname: "example.lb.identifier.amazonaws.com",
+	}}
+	targets = target.targetsFromService(service)
+	assert.ElementsMatch(t, []string{"example.lb.identifier.amazonaws.com"}, targets)
+
+	// Ensure only one hostname
+	service.Status.LoadBalancer.Ingress = []v1.LoadBalancerIngress{{
+		Hostname: "example.lb.identifier.amazonaws.com",
+	}, {
+		Hostname: "example2.lb.identifier.amazonaws.com",
+	}}
+	targets = target.targetsFromService(service)
+	assert.ElementsMatch(t, []string{"example.lb.identifier.amazonaws.com"}, targets)
 }
 
 func TestServiceTargetNamespacedName(t *testing.T) {
