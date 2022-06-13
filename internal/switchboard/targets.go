@@ -45,11 +45,13 @@ func (t serviceTarget) Targets(ctx context.Context, client client.Client) ([]str
 	// Get IPs: try to get load balancer IPs/hostnames, fall back to cluster IPs
 	targets := make([]string, 0)
 	for _, ingress := range service.Status.LoadBalancer.Ingress {
+		if ingress.Hostname != "" {
+			// We cannot have more than one CNAME record, the hostname overwrites everything
+			targets = []string{ingress.Hostname}
+			break
+		}
 		if ingress.IP != "" {
 			targets = append(targets, ingress.IP)
-		}
-		if ingress.Hostname != "" {
-			targets = append(targets, ingress.Hostname)
 		}
 	}
 	if len(targets) == 0 {
