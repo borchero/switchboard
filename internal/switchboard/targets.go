@@ -41,21 +41,28 @@ func (t serviceTarget) Targets(ctx context.Context, client client.Client) ([]str
 	if err := client.Get(ctx, t.name, &service); err != nil {
 		return nil, fmt.Errorf("failed to query service: %w", err)
 	}
+	return t.targetsFromService(service), nil
+}
 
-	// Get IPs: try to get load balancer IPs/hostnames, fall back to cluster IPs
+func (t serviceTarget) targetsFromService(service v1.Service) []string {
+	// Try to get load balancer IPs/hostnames...
 	targets := make([]string, 0)
 	for _, ingress := range service.Status.LoadBalancer.Ingress {
+		if ingress.Hostname != "" {
+			// We cannot have more than one CNAME record, the hostname overwrites everything
+			targets = []string{ingress.Hostname}
+			break
+		}
 		if ingress.IP != "" {
 			targets = append(targets, ingress.IP)
 		}
-		if ingress.Hostname != "" {
-			targets = append(targets, ingress.Hostname)
-		}
 	}
+
+	// ...fall back to cluster IPs
 	if len(targets) == 0 {
 		targets = append(targets, service.Spec.ClusterIPs...)
 	}
-	return targets, nil
+	return targets
 }
 
 func (t serviceTarget) NamespacedName() *types.NamespacedName {
