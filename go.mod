@@ -6,6 +6,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/borchero/zeus v1.0.0
 	github.com/google/uuid v1.3.0
+	github.com/imdario/mergo v0.3.13
 	github.com/jetstack/cert-manager v1.7.2
 	github.com/stretchr/testify v1.7.0
 	github.com/traefik/traefik/v2 v2.6.6
@@ -47,7 +48,6 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

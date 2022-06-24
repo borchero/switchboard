@@ -1,6 +1,7 @@
 package v1
 
 import (
+	v1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
 )
@@ -40,7 +41,7 @@ type ExternalDNSIntegrationConfig struct {
 
 // CertManagerIntegrationConfig describes the configuration for the cert-manager integration.
 type CertManagerIntegrationConfig struct {
-	Issuer IssuerRef `json:"issuer"`
+	Template v1.Certificate `json:"certificateTemplate"`
 }
 
 // ServiceRef uniquely describes a Kubernetes service.

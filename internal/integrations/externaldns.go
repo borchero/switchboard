@@ -73,6 +73,7 @@ func (e *externalDNS) UpdateResource(
 		if err := reconcileMetadata(owner, &resource, e.client.Scheme()); err != nil {
 			return nil
 		}
+
 		// Spec
 		resource.Spec.Endpoints = e.endpoints(info.Hosts, targets)
 		return nil
