@@ -8,6 +8,7 @@ import (
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/k8tests"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
+	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
@@ -199,11 +200,11 @@ func runTest(t *testing.T, test testCase) {
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, test.DNSNames, certificate.Spec.DNSNames)
 		assert.Equal(t,
-			config.Integrations.CertManager.Issuer.Kind,
+			config.Integrations.CertManager.Template.Spec.IssuerRef.Kind,
 			certificate.Spec.IssuerRef.Kind,
 		)
 		assert.Equal(t,
-			config.Integrations.CertManager.Issuer.Name,
+			config.Integrations.CertManager.Template.Spec.IssuerRef.Name,
 			certificate.Spec.IssuerRef.Name,
 		)
 		assert.Equal(t, test.Ingress.Spec.TLS.SecretName, certificate.Spec.SecretName)
@@ -254,9 +255,13 @@ func createConfig(service *v1.Service) configv1.Config {
 				},
 			},
 			CertManager: &configv1.CertManagerIntegrationConfig{
-				Issuer: configv1.IssuerRef{
-					Kind: "ClusterIssuer",
-					Name: "my-issuer",
+				Template: certmanager.Certificate{
+					Spec: certmanager.CertificateSpec{
+						IssuerRef: cmmeta.ObjectReference{
+							Kind: "ClusterIssuer",
+							Name: "my-issuer",
+						},
+					},
 				},
 			},
 		},

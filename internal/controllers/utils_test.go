@@ -5,6 +5,8 @@ import (
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/k8tests"
+	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
+	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -30,7 +32,14 @@ func TestIntegrationsFromConfig(t *testing.T) {
 
 	config.Integrations.ExternalDNS = nil
 	config.Integrations.CertManager = &configv1.CertManagerIntegrationConfig{
-		Issuer: configv1.IssuerRef{Kind: "ClusterIssuer", Name: "my-issuer"},
+		Template: certmanager.Certificate{
+			Spec: certmanager.CertificateSpec{
+				IssuerRef: cmmeta.ObjectReference{
+					Kind: "ClusterIssuer",
+					Name: "my-issuer",
+				},
+			},
+		},
 	}
 	integrations, err = integrationsFromConfig(config, client)
 	require.Nil(t, err)

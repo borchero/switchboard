@@ -8,7 +8,6 @@ import (
 	"github.com/borchero/switchboard/internal/integrations"
 	"github.com/borchero/switchboard/internal/k8s"
 	"github.com/borchero/switchboard/internal/switchboard"
-	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -44,12 +43,7 @@ func integrationsFromConfig(
 
 	certManager := config.Integrations.CertManager
 	if certManager != nil {
-		result = append(result, integrations.NewCertManager(
-			client, cmmeta.ObjectReference{
-				Kind: certManager.Issuer.Kind,
-				Name: certManager.Issuer.Name,
-			},
-		))
+		result = append(result, integrations.NewCertManager(client, certManager.Template))
 	}
 	return result, nil
 }

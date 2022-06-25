@@ -25,9 +25,13 @@ func TestCertManagerUpdateResource(t *testing.T) {
 	owner := k8tests.DummyService("my-service", namespace, 80)
 	err := client.Create(ctx, &owner)
 	require.Nil(t, err)
-	integration := NewCertManager(client, cmmeta.ObjectReference{
-		Kind: "ClusterIssuer",
-		Name: "my-issuer",
+	integration := NewCertManager(client, certmanager.Certificate{
+		Spec: certmanager.CertificateSpec{
+			IssuerRef: cmmeta.ObjectReference{
+				Kind: "ClusterIssuer",
+				Name: "my-issuer",
+			},
+		},
 	})
 
 	// Nothing should be created if no hosts or no tls is set

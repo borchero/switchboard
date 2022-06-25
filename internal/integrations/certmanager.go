@@ -5,22 +5,23 @@ import (
 	"fmt"
 
 	"github.com/borchero/switchboard/internal/k8s"
+	"github.com/imdario/mergo"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
-	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
+	v1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 type certManager struct {
-	client client.Client
-	issuer cmmeta.ObjectReference
+	client   client.Client
+	template v1.Certificate
 }
 
 // NewCertManager initializes a new cert-manager integration which creates certificates which use
 // the provided issuer.
-func NewCertManager(client client.Client, issuer cmmeta.ObjectReference) Integration {
-	return &certManager{client, issuer}
+func NewCertManager(client client.Client, template v1.Certificate) Integration {
+	return &certManager{client, template}
 }
 
 func (*certManager) Name() string {
@@ -52,14 +53,19 @@ func (c *certManager) UpdateResource(
 	resource := certmanager.Certificate{ObjectMeta: c.objectMeta(owner)}
 	if _, err := controllerutil.CreateOrPatch(ctx, c.client, &resource, func() error {
 		// Meta
-		if err := reconcileMetadata(owner, &resource, c.client.Scheme()); err != nil {
-			return err
+		if err := reconcileMetadata(
+			owner, &resource, c.client.Scheme(), &c.template.ObjectMeta,
+		); err != nil {
+			return fmt.Errorf("failed to reconcile metadata: %s", err)
 		}
+
 		// Spec
-		resource.Spec.SecretName = *info.TLSSecretName
-		resource.Spec.DNSNames = info.Hosts
-		resource.Spec.IssuerRef.Kind = c.issuer.Kind
-		resource.Spec.IssuerRef.Name = c.issuer.Name
+		template := c.template.Spec.DeepCopy()
+		template.SecretName = *info.TLSSecretName
+		template.DNSNames = info.Hosts
+		if err := mergo.Merge(&resource.Spec, template, mergo.WithOverride); err != nil {
+			return fmt.Errorf("failed to reconcile specification: %s", err)
+		}
 		return nil
 	}); err != nil {
 		return fmt.Errorf("failed to upsert TLS certificate: %w", err)
