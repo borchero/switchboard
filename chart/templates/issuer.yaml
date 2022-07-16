@@ -1,0 +1,14 @@
+{{ if .Values.certificateIssuer.create }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Release.Name }}-letsencrypt-issuer
+spec:
+  acme:
+    email: {{ .Values.certificateIssuer.email | required "email for certificate issuer missing" }}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: {{ .Release.Name }}-letsencrypt-issuer
+    solvers:
+      {{ toYaml .Values.certificateIssuer.solvers | indent 6 }}
+{{ end }}

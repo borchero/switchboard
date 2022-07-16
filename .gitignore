@@ -7,3 +7,8 @@
 
 # Tests
 cover.out
+
+# Charts
+Chart.lock
+/chart/charts
+*.tgz

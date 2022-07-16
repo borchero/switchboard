@@ -1,0 +1,25 @@
+apiVersion: v2
+type: application
+name: switchboard
+version: 0.0.0
+appVersion: 0.0.0
+home: https://github.com/borchero/switchboard
+sources:
+  - https://github.com/borchero/switchboard
+keywords:
+  - dns
+  - tls
+  - external-dns
+  - cert-manager
+  - traefik
+  - dnsendpoint
+
+dependencies:
+  - name: external-dns
+    version: 6.5.2
+    repository: https://charts.bitnami.com/bitnami
+    condition: external-dns.install
+  - name: cert-manager
+    version: 1.8.0
+    repository: https://charts.jetstack.io
+    condition: cert-manager.install

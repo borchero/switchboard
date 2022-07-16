@@ -1,0 +1,28 @@
+name: Test Helm Chart
+on:
+  push:
+    branches:
+      - "*"
+    paths:
+      - chart/**
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - name: Install Bats
+        run: npm install -g bats@1.6.0
+        shell: bash
+      - name: Setup Kubernetes Cluster
+        uses: helm/kind-action@v1.2.0
+        with:
+          config: chart/tests/kind/config.yaml
+      - name: Run Tests
+        run: bats ./tests -t
+        working-directory: ./chart

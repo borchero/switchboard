@@ -47,7 +47,7 @@ helm install switchboard oci://ghcr.io/borchero/charts/switchboard
 ```
 
 For a full installation guide, consult the
-[Switchboard Helm chart documentation](https://github.com/borchero/switchboard-chart).
+[Switchboard Helm chart documentation](./chart/README.md).
 
 ## Usage
 
@@ -83,8 +83,8 @@ Integrations are entirely independent of each other. Enabling an integration cau
 generate an integration-specific resource (typically a CRD) for each ingress route that it
 processes.
 
-Consult the [Switchboard Helm chart documentation](https://github.com/borchero/switchboard-chart)
-for an overview of how to enable individual integrations.
+Consult the [Switchboard Helm chart documentation](./chart/README.md) for an overview of how to
+enable individual integrations.
 
 #### Cert-Manager
 

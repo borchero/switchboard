@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - "*"
+    paths-ignore:
+      - chart/**
 
 jobs:
   lint:
