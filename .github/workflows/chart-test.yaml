@@ -1,3 +1,6 @@
+# This workflow is used to test the Switchboard Helm chart.
+# It runs whenever the `application-build-image` workflow has been run successfully and the
+# `chart/` directory has any changes.
 name: Test Helm Chart
 on:
   workflow_run:

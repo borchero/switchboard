@@ -1,10 +1,11 @@
 name: Lint Helm Chart
 on:
-  push:
+  pull_request: &when
     branches:
-      - "*"
+      - main
     paths:
       - chart/**
+  push: *when
 
 jobs:
   lint:
