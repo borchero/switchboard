@@ -1,11 +1,15 @@
 name: Check Code
 on:
-  pull_request: &when
+  pull_request:
     branches:
       - main
     paths-ignore:
       - chart/**
-  push: *when
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - chart/**
 
 jobs:
   lint:
