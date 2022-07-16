@@ -1,8 +1,8 @@
 image:
   # -- The switchboard image to use.
   name: ghcr.io/borchero/switchboard
-  # -- The switchboard image tag to use.
-  tag: 0.5.1
+  # -- The switchboard image tag to use. If not provided, assumes the same version as the chart.
+  tag: ~
 
 # -- The number of manager replicas to use.
 replicas: 1

@@ -23,6 +23,17 @@ jobs:
         uses: helm/kind-action@v1.2.0
         with:
           config: chart/tests/kind/config.yaml
+      - name: Specify Image Tag
+        uses: mikefarah/yq@v4
+        with:
+          cmd: yq -i '.image.tag = "gh-actions-${{ github.sha }}"' chart/tests/values/base.yaml
       - name: Run Tests
         run: bats ./tests -t
         working-directory: ./chart
+      - name: Cleanup Test Image
+        uses: bots-house/ghcr-delete-image-action@v1.0.0
+        with:
+          owner: ${{ github.repository_owner }}
+          name: ${{ github.event.repository.name }}
+          token: ${{ github.token }}
+          tag: gh-actions-${{ github.sha }}

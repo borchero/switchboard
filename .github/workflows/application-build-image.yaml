@@ -9,6 +9,9 @@ on:
   push:
     branches:
       - main
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -18,13 +21,22 @@ jobs:
         uses: actions/checkout@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+      - name: Gather File Changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          list-files: none
+          filters: |
+            chart:
+              - chart/**
       - name: Assemble Metadata
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=ref,event=branch
+            type=ref,enable=${{ github.ref_name == 'main' }},event=branch
+            type=sha,enable=${{ github.ref_type != 'tag' && steps.changes.outputs.chart == 'true' }},prefix=gh-actions-,format=long
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
@@ -34,13 +46,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-        if: github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name == 'main')
+        if: |
+          github.ref_type == 'tag'
+          || (github.ref_type == 'pull_request' && steps.changes.outputs.chart == 'true')
+          || (github.ref_type == 'branch' && github.ref_name == 'main')
       - name: Build Image
         uses: docker/build-push-action@v3
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push:
-            ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name ==
-            'main') }}
+            ${{ github.ref_type == 'tag' || (github.ref_type == 'pull_request' &&
+            steps.changes.outputs.chart == 'true') || (github.ref_type == 'branch' &&
+            github.ref_name == 'main') }}
           tags: ${{ steps.meta.outputs.tags }}

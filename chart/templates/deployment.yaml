@@ -24,7 +24,7 @@ spec:
       serviceAccountName: {{ .Release.Name }}
       containers:
         - name: switchboard
-          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+          image: {{ .Values.image.name }}:{{ include "image.tag" . }}
           volumeMounts:
             - name: config
               mountPath: /etc/switchboard/config.yaml

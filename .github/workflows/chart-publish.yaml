@@ -23,7 +23,7 @@ jobs:
         run: |
           VERSION=${{ github.ref_name }}
           helm package . \
-            --app-version $(yq e .image.tag values.yaml) \
+            --app-version ${VERSION#v} \
             --version ${VERSION#v}
         working-directory: ./chart
       - name: Push Chart
