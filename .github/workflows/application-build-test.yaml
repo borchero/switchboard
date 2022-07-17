@@ -121,5 +121,5 @@ jobs:
         with:
           owner: ${{ github.repository_owner }}
           name: ${{ github.event.repository.name }}
-          token: ${{ github.token }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           tag: gh-actions-${{ github.sha }}
