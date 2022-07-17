@@ -65,7 +65,7 @@ jobs:
         # Only login when building for tag, testing, or when building for the main branch
         if: |
           github.ref_type == 'tag'
-          || (github.ref_type == 'pull_request' && needs.file-changes.outputs.chart == 'true')
+          || (github.event_name == 'pull_request' && needs.file-changes.outputs.chart == 'true')
           || (github.ref_type == 'branch' && github.ref_name == 'main')
       - name: Build Image
         uses: docker/build-push-action@v3
@@ -74,7 +74,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           # Only push when building for tag, testing, or when building for the main branch
           push:
-            ${{ github.ref_type == 'tag' || (github.ref_type == 'pull_request' &&
+            ${{ github.ref_type == 'tag' || (github.event_name == 'pull_request' &&
             needs.file-changes.outputs.chart == 'true') || (github.ref_type == 'branch' &&
             github.ref_name == 'main') }}
           tags: ${{ steps.meta.outputs.tags }}

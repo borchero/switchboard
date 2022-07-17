@@ -1,4 +1,4 @@
-name: Lint Helm Chart
+name: Check Helm Chart
 on:
   pull_request:
     branches:
