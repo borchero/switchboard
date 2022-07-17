@@ -117,9 +117,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Cleanup Test Image
-        uses: bots-house/ghcr-delete-image-action@v1.0.0
+        uses: snok/container-retention-policy@v1
         with:
-          owner: ${{ github.repository_owner }}
-          name: ${{ github.event.repository.name }}
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          tag: gh-actions-${{ github.sha }}
+          image-names: ${{ github.event.repository.name }}
+          cut-off: 1 day ago UTC
+          account-type: personal
+          token: ${{ github.token }}
+          filter-tags: gh-actions-${{ github.sha }}
