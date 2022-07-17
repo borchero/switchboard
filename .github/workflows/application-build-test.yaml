@@ -83,7 +83,7 @@ jobs:
       - file-changes
       - build-image
     runs-on: ubuntu-20.04
-    if: ${{ needs.file-changes.outputs.chart == 'true' }}
+    if: ${{ needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
