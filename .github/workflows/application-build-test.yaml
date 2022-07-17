@@ -31,10 +31,8 @@ jobs:
             chart:
               - chart/**
 
-  build:
+  build-image:
     name: Build Image
-    needs:
-      - file-changes
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -48,11 +46,9 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           # We want to set the following tags:
           #  - `main` if executed for build on main branch
-          #  - `gh-actions-<sha>` whenever not building for a tag and the chart ought to be tested
           #  - SemVer when running for a release
           tags: |
             type=ref,enable=${{ github.ref_name == 'main' }},event=branch
-            type=sha,enable=${{ github.ref_type != 'tag' && needs.file-changes.outputs.chart == 'true' }},prefix=gh-actions-,format=long
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
@@ -62,65 +58,66 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-        # Only login when building for tag, testing, or when building for the main branch
-        if: |
-          github.ref_type == 'tag'
-          || (github.event_name == 'pull_request' && needs.file-changes.outputs.chart == 'true')
-          || (github.ref_type == 'branch' && github.ref_name == 'main')
+        # Only push when building for a tag or the main branch
+        if: github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name == 'main')
       - name: Build Image
         uses: docker/build-push-action@v3
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          # Only push when building for tag, testing, or when building for the main branch
+          # Only push when building for a tag or the main branch
           push:
-            ${{ github.ref_type == 'tag' || (github.event_name == 'pull_request' &&
-            needs.file-changes.outputs.chart == 'true') || (github.ref_type == 'branch' &&
-            github.ref_name == 'main') }}
+            ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name ==
+            'main') }}
           tags: ${{ steps.meta.outputs.tags }}
+          outputs: type=oci,dest=/tmp/image.tar
+      - name: Upload Image for Testing
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-image
+          path: /tmp/image.tar
 
   e2e-tests:
     name: Test Helm Chart
     needs:
       - file-changes
-      - build
+      - build-image
     runs-on: ubuntu-20.04
     if: ${{ needs.file-changes.outputs.chart == 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Node
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Set up Node
         uses: actions/setup-node@v2
         with:
           node-version: "16"
       - name: Install Bats
         run: npm install -g bats@1.6.0
         shell: bash
+      - name: Download Image for Testing
+        uses: actions/download-artifact@v2
+        with:
+          name: docker-image
+          path: /tmp
       - name: Setup Kubernetes Cluster
-        uses: helm/kind-action@v1.2.0
+        uses: container-tools/kind-action@v1.7.0
         with:
           config: chart/tests/kind/config.yaml
+      - name: Load Docker Image
+        run: |
+          IMAGE_ID=$(docker load --input /tmp/image.tar | cut -d' ' -f4)
+          docker tag $IMAGE_ID $KIND_REGISTRY/switchboard:dev
+          docker push $KIND_REGISTRY/switchboard:dev
       - name: Specify Image Tag
         uses: mikefarah/yq@v4.26.1
         with:
-          cmd: yq -i '.image.tag = "gh-actions-${{ github.sha }}"' chart/tests/values/base.yaml
+          cmd: |
+            yq -i '
+              .image.name = strenv(KIND_REGISTRY)/switchboard |
+              .image.tag = "dev"
+            ' chart/tests/values/base.yaml
       - name: Run Tests
         run: bats ./tests -t
         working-directory: ./chart
-
-  cleanup:
-    name: Cleanup Test Image
-    needs:
-      - file-changes
-      - e2e-tests
-    if: ${{ needs.file-changes.outputs.chart == 'true' && always() }}
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Cleanup Test Image
-        uses: snok/container-retention-policy@v1
-        with:
-          image-names: ${{ github.event.repository.name }}
-          cut-off: 1 day ago UTC
-          account-type: personal
-          token: ${{ github.token }}
-          filter-tags: gh-actions-${{ github.sha }}
