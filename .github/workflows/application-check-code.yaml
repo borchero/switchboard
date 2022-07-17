@@ -13,6 +13,7 @@ on:
 
 jobs:
   lint:
+    name: Run Linting
     runs-on: ubuntu-20.04
     container: golangci/golangci-lint:v1.45
     steps:
@@ -23,6 +24,7 @@ jobs:
           golangci-lint run --exclude-use-default=false -E goimports -E revive --timeout 10m ./...
 
   test:
+    name: Run Unit Tests
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout

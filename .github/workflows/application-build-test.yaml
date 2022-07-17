@@ -1,0 +1,125 @@
+name: Build and Test Container Image
+on:
+  release:
+    types:
+      - published
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  file-changes:
+    name: Gather File Changes
+    runs-on: ubuntu-20.04
+    outputs:
+      chart: ${{ steps.changes.outputs.chart }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Gather File Changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          list-files: none
+          filters: |
+            chart:
+              - chart/**
+
+  build:
+    name: Build Image
+    needs:
+      - file-changes
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Assemble Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}
+          # We want to set the following tags:
+          #  - `main` if executed for build on main branch
+          #  - `gh-actions-<sha>` whenever not building for a tag and the chart ought to be tested
+          #  - SemVer when running for a release
+          tags: |
+            type=ref,enable=${{ github.ref_name == 'main' }},event=branch
+            type=sha,enable=${{ github.ref_type != 'tag' && needs.file-changes.outputs.chart == 'true' }},prefix=gh-actions-,format=long
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+        # Only login when building for tag, testing, or when building for the main branch
+        if: |
+          github.ref_type == 'tag'
+          || (github.ref_type == 'pull_request' && needs.file-changes.outputs.chart == 'true')
+          || (github.ref_type == 'branch' && github.ref_name == 'main')
+      - name: Build Image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          # Only push when building for tag, testing, or when building for the main branch
+          push:
+            ${{ github.ref_type == 'tag' || (github.ref_type == 'pull_request' &&
+            needs.file-changes.outputs.chart == 'true') || (github.ref_type == 'branch' &&
+            github.ref_name == 'main') }}
+          tags: ${{ steps.meta.outputs.tags }}
+
+  e2e-tests:
+    name: Test Helm Chart
+    needs:
+      - file-changes
+      - build
+    runs-on: ubuntu-20.04
+    if: ${{ needs.file-changes.outputs.chart == 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - name: Install Bats
+        run: npm install -g bats@1.6.0
+        shell: bash
+      - name: Setup Kubernetes Cluster
+        uses: helm/kind-action@v1.2.0
+        with:
+          config: chart/tests/kind/config.yaml
+      - name: Specify Image Tag
+        uses: mikefarah/yq@v4.26.1
+        with:
+          cmd: yq -i '.image.tag = "gh-actions-${{ github.sha }}"' chart/tests/values/base.yaml
+      - name: Run Tests
+        run: bats ./tests -t
+        working-directory: ./chart
+
+  cleanup:
+    name: Cleanup Test Image
+    needs:
+      - file-changes
+      - e2e-tests
+    if: ${{ needs.file-changes.outputs.chart == 'true' && always() }}
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Cleanup Test Image
+        uses: bots-house/ghcr-delete-image-action@v1.0.0
+        with:
+          owner: ${{ github.repository_owner }}
+          name: ${{ github.event.repository.name }}
+          token: ${{ github.token }}
+          tag: gh-actions-${{ github.sha }}
