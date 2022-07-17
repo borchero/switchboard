@@ -107,6 +107,7 @@ jobs:
           config: chart/tests/kind/config.yaml
       - name: Load Docker Image
         run: |
+          docker load --input /tmp/image.tar
           IMAGE_ID=$(docker load --input /tmp/image.tar | cut -d' ' -f4)
           docker tag $IMAGE_ID $KIND_REGISTRY/switchboard:dev
           docker push $KIND_REGISTRY/switchboard:dev
