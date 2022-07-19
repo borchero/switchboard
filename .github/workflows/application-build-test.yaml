@@ -60,7 +60,7 @@ jobs:
           password: ${{ github.token }}
         # Only push when building for a tag or the main branch
         if: github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name == 'main')
-      - name: Build Image
+      - name: Build Multi-Platform Image
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -70,9 +70,17 @@ jobs:
             ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name ==
             'main') }}
           tags: ${{ steps.meta.outputs.tags }}
-          outputs: type=docker,dest=/tmp/image.tar
+      # Only export and upload the image if used for testing
+      - name: Export Image for Test Platform
+        if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: false
+          outputs: type=oci,dest=/tmp/image.tar
       - name: Upload Image for Testing
         uses: actions/upload-artifact@v2
+        if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
         with:
           name: docker-image
           path: /tmp/image.tar
@@ -83,7 +91,7 @@ jobs:
       - file-changes
       - build-image
     runs-on: ubuntu-20.04
-    if: ${{ needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag' }}
+    if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
