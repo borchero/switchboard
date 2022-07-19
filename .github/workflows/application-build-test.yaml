@@ -127,7 +127,7 @@ jobs:
         with:
           cmd: |
             yq -i '
-              .image.name = strenv(KIND_REGISTRY)/switchboard |
+              .image.name = "env(KIND_REGISTRY)/switchboard" |
               .image.tag = "dev"
             ' chart/tests/values/base.yaml
       - name: Run Tests
