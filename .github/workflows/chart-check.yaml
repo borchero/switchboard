@@ -39,4 +39,5 @@ jobs:
         run: helm-docs
         working-directory: ./chart
       - name: Check for changes
-        run: git diff
+        run: helm-docs -o README.tmp.md && diff README.md README.tmp.md
+        working-directory: ./chart
