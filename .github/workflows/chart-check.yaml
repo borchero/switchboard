@@ -34,9 +34,9 @@ jobs:
         with:
           go-version: ">=1.18.0"
       - name: Download helm-docs
-        run: go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
+        run: go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.11.0
       - name: Generate README
         run: helm-docs
         working-directory: ./chart
       - name: Check for changes
-        run: git diff-index HEAD
+        run: git diff-index --quiet HEAD
