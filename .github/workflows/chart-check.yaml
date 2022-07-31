@@ -39,4 +39,4 @@ jobs:
         run: helm-docs
         working-directory: ./chart
       - name: Check for changes
-        run: git diff-index --quiet HEAD
+        run: git diff
