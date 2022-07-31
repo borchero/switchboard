@@ -2,7 +2,6 @@
 
 ![Type: application](https://img.shields.io/badge/Type-application-informational)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/switchboard)](https://artifacthub.io/packages/search?repo=switchboard)
-![License](https://img.shields.io/github/license/borchero/switchboard-chart)
 
 This directory contains the Helm chart as well as detailed instructions for deploying the
 Switchboard Kubernetes operator. Please read through this repository's root README to understand
