@@ -20,6 +20,7 @@ jobs:
         run: apk add yq
       - name: Download Dependencies
         run: helm dependency build
+        working-directory: ./chart
       - name: Package Chart
         run: |
           VERSION=${{ github.ref_name }}
