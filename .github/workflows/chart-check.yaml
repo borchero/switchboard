@@ -1,0 +1,43 @@
+name: Check Helm Chart
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - chart/**
+  push:
+    branches:
+      - main
+    paths:
+      - chart/**
+
+jobs:
+  lint:
+    name: Run Linting
+    runs-on: ubuntu-20.04
+    container: alpine/helm:3.8.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Lint Chart
+        run: helm lint
+        working-directory: ./chart
+
+  check-docs:
+    name: Check Docs
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.18.0"
+      - name: Download helm-docs
+        run: go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.11.0
+      - name: Generate README
+        run: helm-docs
+        working-directory: ./chart
+      - name: Check for changes
+        run: helm-docs -o README.tmp.md && diff README.md README.tmp.md
+        working-directory: ./chart

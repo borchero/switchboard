@@ -1,0 +1,34 @@
+name: Publish Helm Chart
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  publish:
+    name: Package and Upload
+    runs-on: ubuntu-20.04
+    container: alpine/helm:3.8.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to GitHub OCI Registry
+        run: |
+          echo ${{ github.token }} | \
+            helm registry login ghcr.io --username ${{ github.actor }} --password-stdin
+      - name: Install yq
+        run: apk add yq
+      - name: Download Dependencies
+        run: helm dependency build
+      - name: Package Chart
+        run: |
+          VERSION=${{ github.ref_name }}
+          helm package . \
+            --app-version ${VERSION#v} \
+            --version ${VERSION#v}
+        working-directory: ./chart
+      - name: Push Chart
+        run: |
+          VERSION=${{ github.ref_name }}
+          helm push switchboard-${VERSION#v}.tgz oci://ghcr.io/${{ github.actor }}/charts
+        working-directory: ./chart

@@ -1,0 +1,107 @@
+image:
+  # -- The switchboard image to use.
+  name: ghcr.io/borchero/switchboard
+  # -- The switchboard image tag to use. If not provided, assumes the same version as the chart.
+  tag: ~
+
+# -- The number of manager replicas to use.
+replicas: 1
+
+# -- Annotations to set on the switchboard pod.
+podAnnotations: {}
+
+# -- The resources to use for the operator.
+resources:
+  {}
+  # requests:
+  #   cpu: 5m
+  #   memory: 25Mi
+  # limits:
+  #   cpu: 50m
+  #   memory: 40Mi
+
+selector:
+  # -- When set, Switchboard only processes ingress routes with the `kubernetes.io/ingress.class`
+  #    annotation set to this value.
+  ingressClass: ~
+
+integrations:
+  certManager:
+    # -- Whether the cert-manager integration should be enabled. If enabled, `Certificate`
+    #    resources are created by Switchboard. Setting this to `true` requires specifying an issuer
+    #    via `integrations.certManager.issuer` or letting the chart create its own issuer by
+    #    setting `certificateIssuer.create = true` and specifying additional properties for the
+    #    certificate issuer.
+    enabled: false
+    # -- The certificate template to use when creating certificates via the cert-manager
+    #    integration. Unless `certificateIssuer.create` is set to `true` when installing this
+    #    chart, setting `.spec.IssuerRef` is required.
+    certificateTemplate: {}
+  externalDNS:
+    # -- Whether the external-dns integration should be enabled. If enabled `DNSEndpoint` resources
+    #    are created by Switchboard. Setting this to `true` requires specifying the target via
+    #    `integrations.externalDNS.target`.
+    enabled: false
+    # -- The static IP addresses that created DNS records should point to. Must not be provided
+    #    if the target service is set.
+    targetIPs: []
+    targetService:
+      # -- The name of the (Traefik) service whose IP address should be used for DNS records.
+      name: ~
+      # -- The namespace of the (Traefik) service whose IP address should be used for DNS records.
+      namespace: ~
+
+metrics:
+  # -- Whether the metrics endpoint should be enabled.
+  enabled: true
+  # -- The port on which Prometheus metrics can be scraped on path `/metrics`.
+  port: 9090
+
+#--------------------------------------------------------------------------------------------------
+# THIRD-PARTY RESOURCES
+#--------------------------------------------------------------------------------------------------
+
+podMonitor:
+  # -- Whether a PodMonitor should be created which can be used to scrape the metrics endpoint.
+  # Ignored if `metrics.enabled` is set to `false`
+  create: false
+  # -- The namespace where the monitor should be created in. Defaults to the release namespace.
+  namespace: ~
+
+certificateIssuer:
+  # -- Whether an ACME certificate issuer should be created for use with cert-manager.
+  create: false
+  # -- This email should be set to something useful -- it is used to send emails when TLS
+  #    certificates are about to expire.
+  email: ~
+  # -- The solvers to use for verifying that the domain is owned in the ACME challenge.
+  #    See: https://cert-manager.io/docs/configuration/acme/
+  solvers: []
+
+#--------------------------------------------------------------------------------------------------
+# EXTERNAL DEPENDENCIES
+#--------------------------------------------------------------------------------------------------
+
+external-dns:
+  # -- Whether the external-dns chart should be installed. If installed manually, make sure to add
+  #    the `crd` item to the sources.
+  #    See: https://artifacthub.io/packages/helm/external-dns/external-dns
+  install: false
+
+  ### OVERWRITES ###
+  crd:
+    create: true
+  sources:
+    - crd
+    - service
+    - ingress
+
+#--------------------------------------------------------------------------------------------------
+
+cert-manager:
+  # -- Whether the cert-manager chart should be installed.
+  #    See: https://artifacthub.io/packages/helm/cert-manager/cert-manager
+  install: false
+
+  ### OVERWRITES ###
+  installCRDs: true

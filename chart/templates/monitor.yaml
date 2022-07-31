@@ -1,0 +1,18 @@
+{{ if and .Values.metrics.enabled .Values.podMonitor.create }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.podMonitor.namespace | default .Release.Namespace }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  podMetricsEndpoint:
+    - port: metrics
+      path: /metrics
+{{ end }}
