@@ -114,7 +114,7 @@ jobs:
       - name: Setup Kubernetes Cluster
         uses: container-tools/kind-action@v1.7.0
         with:
-          config: chart/tests/kind/config.yaml
+          config: chart/tests/kind/actions.yaml
       - name: Load Docker Image
         run: |
           docker load -i /tmp/image.tar
