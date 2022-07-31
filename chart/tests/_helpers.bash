@@ -29,6 +29,7 @@ function await_pod_ready() {
     }
 
     for i in `seq 60`; do
+        kubectl describe pods
         if [ -n "$(check ${POD_NAME})" ]; then
             echo "${POD_NAME} is ready."
             return 0

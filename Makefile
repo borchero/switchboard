@@ -1,4 +1,5 @@
 KIND_CLUSTER_NAME ?= switchboard-tests
+SED = sed -i '' -E
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
@@ -23,14 +24,25 @@ help: ## Display this help.
 generate: controller-gen ## Generate code for custom resources
 	$(CONTROLLER_GEN) object paths="./..."
 
+.PHONY: docs
+docs: ## Generate helm docs in chart/README.md
+	cd $(CURDIR)/chart
+	helm-docs
+	$(SED) '/external-dns\.sources/d' README.md
+	$(SED) '/external-dns\.crd/d' README.md
+	$(SED) '/cert-manager\.installCRDs/d' README.md
+
 .PHONY: lint
 lint: ## Lint the code with golangci-lint.
 	golangci-lint run --exclude-use-default=false -E goimports -E revive --timeout 10m ./...
 
 .PHONY: test
-test: ## Run tests
+test: ## Run unit tests
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" \
 	go test ./... -coverprofile cover.out
+
+e2e-tests: create-cluster ## Run end-to-end tests
+	cd $(CURDIR)/chart && bats tests -t
 
 #--------------------------------------------------------------------------------------------------
 ##@ Build
