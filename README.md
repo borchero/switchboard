@@ -112,7 +112,7 @@ spec:
 
 #### External-DNS
 
-The cert-manager integration causes Switchboard to create a `DNSEndpoint` resource for an
+The external-dns integration causes Switchboard to create a `DNSEndpoint` resource for an
 `IngressRoute` if the ingress references at least one host. Given the example ingress route above,
 Switchboard creates the following endpoint:
 
