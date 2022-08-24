@@ -52,7 +52,7 @@ func (e *externalDNS) UpdateResource(
 ) error {
 	// If the ingress specifies no hosts, there should be no endpoint. We try deleting it and
 	// ignore any error if it was not found.
-	if len(info.Hosts) == 0 {
+	if len(info.Hosts.Names) == 0 {
 		dnsEndpoint := endpoint.DNSEndpoint{ObjectMeta: e.objectMeta(owner)}
 		if err := k8s.DeleteIfFound(ctx, e.client, &dnsEndpoint); err != nil {
 			return fmt.Errorf("failed to delete DNS endpoint: %w", err)
@@ -61,7 +61,7 @@ func (e *externalDNS) UpdateResource(
 	}
 
 	// Get the IPs of the target service
-	targets, err := e.target.Targets(ctx, e.client)
+	targets, err := e.target.Targets(ctx, e.client, info.Hosts.Target)
 	if err != nil {
 		return fmt.Errorf("failed to query IP for DNS A record: %w", err)
 	}
@@ -75,7 +75,7 @@ func (e *externalDNS) UpdateResource(
 		}
 
 		// Spec
-		resource.Spec.Endpoints = e.endpoints(info.Hosts, targets)
+		resource.Spec.Endpoints = e.endpoints(info.Hosts.Names, targets)
 		return nil
 	}); err != nil {
 		return fmt.Errorf("failed to upsert DNS endpoint: %w", err)

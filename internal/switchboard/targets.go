@@ -3,17 +3,23 @@ package switchboard
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"sort"
+	"strings"
 
+	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/mabels/ipaddress/go/ipaddress"
 )
 
 // Target is a type which allows to retrieve a potentially dynamically changing IP from Kubernetes.
 type Target interface {
 	// Targets returns the IPv4/IPv6 addresses or hostnames that should be used as targets or an
 	// error if the addresses/hostnames cannot be retrieved.
-	Targets(ctx context.Context, client client.Client) ([]string, error)
+	Targets(ctx context.Context, client client.Client, target *string) ([]string, error)
 	// NamespacedName returns the namespaced name of the dynamic target service or none if the IP
 	// is not retrieved dynamically.
 	NamespacedName() *types.NamespacedName
@@ -24,24 +30,85 @@ type Target interface {
 //-------------------------------------------------------------------------------------------------
 
 type serviceTarget struct {
-	name types.NamespacedName
+	name   types.NamespacedName
+	logger *zap.Logger
 }
 
 // NewServiceTarget creates a new target which dynamically sources the IP from the provided
 // Kubernetes service.
-func NewServiceTarget(name, namespace string) Target {
+func NewServiceTarget(name, namespace string, log *zap.Logger) Target {
 	return serviceTarget{
-		name: types.NamespacedName{Name: name, Namespace: namespace},
+		logger: log,
+		name:   types.NamespacedName{Name: name, Namespace: namespace},
 	}
 }
 
-func (t serviceTarget) Targets(ctx context.Context, client client.Client) ([]string, error) {
+func (t serviceTarget) Targets(ctx context.Context, client client.Client, targets *string) ([]string, error) {
 	// Get service
-	var service v1.Service
-	if err := client.Get(ctx, t.name, &service); err != nil {
-		return nil, fmt.Errorf("failed to query service: %w", err)
+	if targets == nil {
+		tmp := fmt.Sprintf("%s/%s", t.name.Namespace, t.name.Name)
+		targets = &tmp
 	}
-	return t.targetsFromService(service), nil
+	out := []string{}
+	for _, target := range strings.Split(*targets, ",") {
+		target = strings.TrimSpace(target)
+		if len(target) == 0 {
+			continue
+		}
+		if ipaddress.Parse(target).IsOk() {
+			t.logger.Debug(fmt.Sprintf("TargetIP:%s", target))
+			out = append(out, target)
+			continue
+		}
+		// very bad regex
+		if found, _ := regexp.MatchString("[0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+.*", target); found {
+			t.logger.Debug(fmt.Sprintf("TargetCNAME:%s", target))
+			out = append(out, target)
+			continue
+		}
+		parts := strings.Split(target, "/")
+		nsName := types.NamespacedName{
+			Namespace: t.name.Namespace,
+			Name:      parts[0],
+		}
+		if len(parts) > 1 {
+			nsName.Namespace = parts[0]
+			nsName.Name = parts[1]
+		}
+		var service v1.Service
+		if err := client.Get(ctx, nsName, &service); err != nil {
+			return nil, fmt.Errorf("failed to query service: %s:%s:%w", nsName.Namespace, nsName.Name, err)
+		}
+		t.logger.Debug(fmt.Sprintf("TargetFromService:%s/%s - %s", nsName.Namespace, nsName.Name, target))
+		targets := t.targetsFromService(service)
+		out = append(out, targets...)
+	}
+	reduce := map[string]string{}
+	for _, target := range out {
+		class := "CNAME"
+		if ipaddress.Parse(target).IsOk() {
+			class = "IP"
+		}
+		reduce[target] = class
+	}
+	var itsCnameOrIp string
+	countClass := 0
+	out = []string{}
+	for target, class := range reduce {
+		out = append(out, target)
+		countClass++
+		if itsCnameOrIp == "" {
+			itsCnameOrIp = class
+		}
+		if itsCnameOrIp != class {
+			return nil, fmt.Errorf("cannot mix CNAME and IP addresses in target: %s", target)
+		}
+		if itsCnameOrIp == "CNAME" && countClass > 1 {
+			return nil, fmt.Errorf("CNAME allows only one target: %s", target)
+		}
+	}
+	sort.Strings(out)
+	return out, nil
 }
 
 func (t serviceTarget) targetsFromService(service v1.Service) []string {
@@ -80,10 +147,10 @@ type staticTarget struct {
 // NewStaticTarget creates a new target which provides the given static IPs. IPs may be IPv4 or
 // IPv6 addresses (and any combination thereof).
 func NewStaticTarget(ips ...string) Target {
-	return staticTarget{ips}
+	return staticTarget{ips: ips}
 }
 
-func (t staticTarget) Targets(ctx context.Context, client client.Client) ([]string, error) {
+func (t staticTarget) Targets(ctx context.Context, client client.Client, targets *string) ([]string, error) {
 	return t.ips, nil
 }
 

@@ -8,6 +8,10 @@ import (
 )
 
 const (
+	targetAnnotation = "switchboard.borchero.com/target"
+)
+
+const (
 	hostRegex = "`((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9])`"
 )
 
@@ -16,6 +20,11 @@ var (
 		fmt.Sprintf("(?:Host|HostSNI)\\(%s(?:, *%s)*\\)", hostRegex, hostRegex),
 	)
 )
+
+type HostsTarget struct {
+	Target *string
+	Names  []string
+}
 
 // HostCollection allows to aggregate the hosts from ingress resources.
 type HostCollection struct {
@@ -69,10 +78,18 @@ func (a *HostCollection) Len() int {
 }
 
 // Hosts returns all hosts managed by this aggregator.
-func (a *HostCollection) Hosts() []string {
-	hosts := make([]string, 0, len(a.hosts))
-	for host := range a.hosts {
-		hosts = append(hosts, host)
+func (a *HostCollection) Hosts(annotations map[string]string) HostsTarget {
+	var target *string = nil
+	fromAnnotation, ok := annotations[targetAnnotation]
+	if ok {
+		target = &fromAnnotation
 	}
-	return hosts
+	ret := HostsTarget{
+		Names:  make([]string, 0, len(a.hosts)),
+		Target: target,
+	}
+	for host := range a.hosts {
+		ret.Names = append(ret.Names, host)
+	}
+	return ret
 }

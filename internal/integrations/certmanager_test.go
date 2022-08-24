@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/borchero/switchboard/internal/k8tests"
+	"github.com/borchero/switchboard/internal/switchboard"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"github.com/stretchr/testify/assert"
@@ -47,13 +48,13 @@ func TestCertManagerUpdateResource(t *testing.T) {
 	require.Nil(t, err)
 	assert.Len(t, getCertificates(ctx, t, client, namespace), 0)
 
-	info = IngressInfo{Hosts: []string{"example.com"}}
+	info = IngressInfo{Hosts: switchboard.HostsTarget{Names: []string{"example.com"}}}
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 	assert.Len(t, getCertificates(ctx, t, client, namespace), 0)
 
 	// If both are set, we should see a certificate created
-	info = IngressInfo{Hosts: []string{"example.com"}, TLSSecretName: &tlsName}
+	info = IngressInfo{Hosts: switchboard.HostsTarget{Names: []string{"example.com"}}, TLSSecretName: &tlsName}
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 
@@ -63,16 +64,16 @@ func TestCertManagerUpdateResource(t *testing.T) {
 	assert.Equal(t, tlsName, certificates[0].Spec.SecretName)
 	assert.Equal(t, "ClusterIssuer", certificates[0].Spec.IssuerRef.Kind)
 	assert.Equal(t, "my-issuer", certificates[0].Spec.IssuerRef.Name)
-	assert.ElementsMatch(t, info.Hosts, certificates[0].Spec.DNSNames)
+	assert.ElementsMatch(t, info.Hosts.Names, certificates[0].Spec.DNSNames)
 
 	// We should see an update if we change any info
-	info.Hosts = []string{"example.com", "www.example.com"}
+	info.Hosts = switchboard.HostsTarget{Names: []string{"example.com", "www.example.com"}}
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 	certificates = getCertificates(ctx, t, client, namespace)
 	assert.Len(t, certificates, 1)
 	assert.Equal(t, tlsName, certificates[0].Spec.SecretName)
-	assert.ElementsMatch(t, info.Hosts, certificates[0].Spec.DNSNames)
+	assert.ElementsMatch(t, info.Hosts.Names, certificates[0].Spec.DNSNames)
 
 	updatedTLSName := "new-test-tls"
 	info.TLSSecretName = &updatedTLSName
@@ -81,10 +82,10 @@ func TestCertManagerUpdateResource(t *testing.T) {
 	certificates = getCertificates(ctx, t, client, namespace)
 	assert.Len(t, certificates, 1)
 	assert.Equal(t, updatedTLSName, certificates[0].Spec.SecretName)
-	assert.ElementsMatch(t, info.Hosts, certificates[0].Spec.DNSNames)
+	assert.ElementsMatch(t, info.Hosts.Names, certificates[0].Spec.DNSNames)
 
 	// When no hosts are set, the certificate should be removed again
-	info.Hosts = nil
+	info.Hosts = switchboard.HostsTarget{}
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 	assert.Len(t, getCertificates(ctx, t, client, namespace), 0)

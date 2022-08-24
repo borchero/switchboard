@@ -6,6 +6,7 @@ import (
 
 	"github.com/borchero/switchboard/internal/k8tests"
 	"github.com/borchero/switchboard/internal/switchboard"
+	"github.com/borchero/zeus/pkg/zeus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -13,7 +14,7 @@ import (
 )
 
 func TestExternalDNSWatchedObject(t *testing.T) {
-	integration := NewExternalDNS(nil, switchboard.NewServiceTarget("my-name", "my-namespace"))
+	integration := NewExternalDNS(nil, switchboard.NewServiceTarget("my-name", "my-namespace", zeus.Logger(context.Background())))
 	obj := integration.WatchedObject()
 	assert.Equal(t, "my-name", obj.GetName())
 	assert.Equal(t, "my-namespace", obj.GetNamespace())
@@ -31,7 +32,7 @@ func TestExternalDNSUpdateResource(t *testing.T) {
 	owner := k8tests.DummyService("my-service", namespace, 80)
 	err := client.Create(ctx, &owner)
 	require.Nil(t, err)
-	integration := NewExternalDNS(client, switchboard.NewServiceTarget(owner.Name, namespace))
+	integration := NewExternalDNS(client, switchboard.NewServiceTarget(owner.Name, namespace, zeus.Logger(ctx)))
 
 	// No resource should be created if no hosts are provided
 	info := IngressInfo{}
@@ -40,25 +41,25 @@ func TestExternalDNSUpdateResource(t *testing.T) {
 	assert.Len(t, getDNSEndpoints(ctx, t, client, namespace), 0)
 
 	// A resource with the name of the service should be created for at least one host
-	info.Hosts = []string{"example.com"}
+	info.Hosts = switchboard.HostsTarget{Names: []string{"example.com"}}
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 	endpoints := getDNSEndpoints(ctx, t, client, namespace)
 	assert.Len(t, endpoints, 1)
 	assert.Contains(t, endpoints, owner.Name)
-	assert.ElementsMatch(t, endpoints[owner.Name], info.Hosts)
+	assert.ElementsMatch(t, endpoints[owner.Name], info.Hosts.Names)
 
 	// When the hosts are changed, more endpoints should be added
-	info.Hosts = []string{"example.com", "www.example.com"}
+	info.Hosts = switchboard.HostsTarget{Names: []string{"example.com", "www.example.com"}}
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 	endpoints = getDNSEndpoints(ctx, t, client, namespace)
 	assert.Len(t, endpoints, 1)
 	assert.Contains(t, endpoints, owner.Name)
-	assert.ElementsMatch(t, endpoints[owner.Name], info.Hosts)
+	assert.ElementsMatch(t, endpoints[owner.Name], info.Hosts.Names)
 
 	// When no hosts are set, the endpoints should be removed
-	info.Hosts = nil
+	info.Hosts = switchboard.HostsTarget{}
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 	assert.Len(t, getDNSEndpoints(ctx, t, client, namespace), 0)
@@ -66,48 +67,48 @@ func TestExternalDNSUpdateResource(t *testing.T) {
 
 func TestExternalDNSEndpoints(t *testing.T) {
 	integration := externalDNS{ttl: 250}
-	hosts := []string{"example.com", "www.example.com"}
+	hosts := switchboard.HostsTarget{Names: []string{"example.com", "www.example.com"}}
 
-	endpoints := integration.endpoints(hosts, []string{"127.0.0.1"})
+	endpoints := integration.endpoints(hosts.Names, []string{"127.0.0.1"})
 	assert.Len(t, endpoints, 2)
 	for _, ep := range endpoints {
 		assert.ElementsMatch(t, ep.Targets, []string{"127.0.0.1"})
 		assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
 		assert.Equal(t, ep.RecordType, "A")
-		assert.Contains(t, hosts, ep.DNSName)
+		assert.Contains(t, hosts.Names, ep.DNSName)
 	}
 
-	endpoints = integration.endpoints(hosts, []string{"2001:db8::1"})
+	endpoints = integration.endpoints(hosts.Names, []string{"2001:db8::1"})
 	assert.Len(t, endpoints, 2)
 	for _, ep := range endpoints {
 		assert.ElementsMatch(t, ep.Targets, []string{"2001:db8::1"})
 		assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
 		assert.Equal(t, ep.RecordType, "AAAA")
-		assert.Contains(t, hosts, ep.DNSName)
+		assert.Contains(t, hosts.Names, ep.DNSName)
 	}
 
-	endpoints = integration.endpoints(hosts, []string{"127.0.0.1", "2001:db8::1"})
+	endpoints = integration.endpoints(hosts.Names, []string{"127.0.0.1", "2001:db8::1"})
 	assert.Len(t, endpoints, 4)
 	for _, ep := range endpoints {
 		if ep.RecordType == "A" {
 			assert.ElementsMatch(t, ep.Targets, []string{"127.0.0.1"})
 			assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
-			assert.Contains(t, hosts, ep.DNSName)
+			assert.Contains(t, hosts.Names, ep.DNSName)
 		} else {
 			assert.ElementsMatch(t, ep.Targets, []string{"2001:db8::1"})
 			assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
 			assert.Equal(t, ep.RecordType, "AAAA")
-			assert.Contains(t, hosts, ep.DNSName)
+			assert.Contains(t, hosts.Names, ep.DNSName)
 		}
 	}
 
-	endpoints = integration.endpoints(hosts, []string{"example.lb.identifier.amazonaws.com"})
+	endpoints = integration.endpoints(hosts.Names, []string{"example.lb.identifier.amazonaws.com"})
 	assert.Len(t, endpoints, 2)
 	for _, ep := range endpoints {
 		assert.ElementsMatch(t, ep.Targets, []string{"example.lb.identifier.amazonaws.com"})
 		assert.Equal(t, ep.RecordTTL, endpoint.TTL(250))
 		assert.Equal(t, ep.RecordType, "CNAME")
-		assert.Contains(t, hosts, ep.DNSName)
+		assert.Contains(t, hosts.Names, ep.DNSName)
 	}
 }
 
@@ -117,6 +118,28 @@ func TestExternalDNSRecordType(t *testing.T) {
 	assert.Equal(t, "AAAA", integration.recordType("::FFFF:C0A8:1"))
 	assert.Equal(t, "AAAA", integration.recordType("2001:db8::1"))
 	assert.Equal(t, "CNAME", integration.recordType("example.lb.identifier.amazonaws.com"))
+}
+
+func TestWithTargetAnnotation(t *testing.T) {
+	// Setup
+	ctx := context.Background()
+	scheme := k8tests.NewScheme()
+	client := k8tests.NewClient(t, scheme)
+	namespace, shutdown := k8tests.NewNamespace(ctx, t, client)
+	defer shutdown()
+
+	// Create a dummy service as owner and target
+	owner := k8tests.DummyService("my-service", namespace, 80)
+	err := client.Create(ctx, &owner)
+	require.Nil(t, err)
+	integration := NewExternalDNS(client, switchboard.NewServiceTarget(owner.Name, namespace, zeus.Logger(ctx)))
+
+	// No resource should be created if no hosts are provided
+	info := IngressInfo{}
+	err = integration.UpdateResource(ctx, &owner, info)
+	require.Nil(t, err)
+	assert.Len(t, getDNSEndpoints(ctx, t, client, namespace), 0)
+
 }
 
 //-------------------------------------------------------------------------------------------------

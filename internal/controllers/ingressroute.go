@@ -27,7 +27,7 @@ type IngressRouteReconciler struct {
 func NewIngressRouteReconciler(
 	client client.Client, logger *zap.Logger, config configv1.Config,
 ) (IngressRouteReconciler, error) {
-	integrations, err := integrationsFromConfig(config, client)
+	integrations, err := integrationsFromConfig(config, client, logger)
 	if err != nil {
 		return IngressRouteReconciler{}, fmt.Errorf("failed to initialize integrations: %s", err)
 	}
@@ -68,7 +68,7 @@ func (r *IngressRouteReconciler) Reconcile(
 		Hosts: switchboard.NewHostCollection().
 			WithTLSHostsIfAvailable(ingressRoute.Spec.TLS).
 			WithRouteHostsIfRequired(ingressRoute.Spec.Routes).
-			Hosts(),
+			Hosts(ingressRoute.ObjectMeta.Annotations),
 		TLSSecretName: ext.AndThen(ingressRoute.Spec.TLS, func(tls traefik.TLS) string {
 			return tls.SecretName
 		}),
