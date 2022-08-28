@@ -3,6 +3,7 @@ package switchboard
 import (
 	"context"
 	"fmt"
+	"net"
 	"regexp"
 	"sort"
 	"strings"
@@ -11,8 +12,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/mabels/ipaddress/go/ipaddress"
 )
 
 // Target is a type which allows to retrieve a potentially dynamically changing IP from Kubernetes.
@@ -51,18 +50,19 @@ func (t serviceTarget) Targets(ctx context.Context, client client.Client, target
 	}
 	out := []string{}
 	for _, target := range strings.Split(*targets, ",") {
+		logger := t.logger.With(zap.String("target", target))
 		target = strings.TrimSpace(target)
 		if len(target) == 0 {
 			continue
 		}
-		if ipaddress.Parse(target).IsOk() {
-			t.logger.Debug(fmt.Sprintf("TargetIP:%s", target))
+		if net.ParseIP(target) != nil {
+			logger.Debug("target is ip address")
 			out = append(out, target)
 			continue
 		}
 		// very bad regex
 		if found, _ := regexp.MatchString("[0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+.*", target); found {
-			t.logger.Debug(fmt.Sprintf("TargetCNAME:%s", target))
+			logger.Debug("target is cname ")
 			out = append(out, target)
 			continue
 		}
@@ -79,14 +79,14 @@ func (t serviceTarget) Targets(ctx context.Context, client client.Client, target
 		if err := client.Get(ctx, nsName, &service); err != nil {
 			return nil, fmt.Errorf("failed to query service: %s:%s:%w", nsName.Namespace, nsName.Name, err)
 		}
-		t.logger.Debug(fmt.Sprintf("TargetFromService:%s/%s - %s", nsName.Namespace, nsName.Name, target))
+		logger.Debug("target is serviceaddress", zap.String("namespace", nsName.Namespace), zap.String("name", nsName.Name))
 		targets := t.targetsFromService(service)
 		out = append(out, targets...)
 	}
 	reduce := map[string]string{}
 	for _, target := range out {
 		class := "CNAME"
-		if ipaddress.Parse(target).IsOk() {
+		if net.ParseIP(target) != nil {
 			class = "IP"
 		}
 		reduce[target] = class
