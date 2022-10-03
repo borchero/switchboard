@@ -2,19 +2,9 @@ package switchboard
 
 import (
 	"fmt"
-	"regexp"
 
+	muxer "github.com/traefik/traefik/v2/pkg/muxer/http"
 	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
-)
-
-const (
-	hostRegex = "`((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9])`"
-)
-
-var (
-	hostRuleRegex = regexp.MustCompile(
-		fmt.Sprintf("(?:Host|HostSNI)\\(%s(?:, *%s)*\\)", hostRegex, hostRegex),
-	)
 )
 
 // HostCollection allows to aggregate the hosts from ingress resources.
@@ -45,22 +35,24 @@ func (a *HostCollection) WithTLSHostsIfAvailable(config *traefik.TLS) *HostColle
 // WithRouteHostsIfRequired aggregates all (unique) hosts found in the provided routes. If the
 // aggregator already manages at least one host, this method is a noop, regardless of the routes
 // passed as parameters.
-func (a *HostCollection) WithRouteHostsIfRequired(routes []traefik.Route) *HostCollection {
+func (a *HostCollection) WithRouteHostsIfRequired(
+	routes []traefik.Route,
+) (*HostCollection, error) {
 	if len(a.hosts) > 0 {
-		return a
+		return a, nil
 	}
 	for _, route := range routes {
 		if route.Kind == "Rule" {
-			for _, matches := range hostRuleRegex.FindAllStringSubmatch(route.Match, -1) {
-				for _, match := range matches[1:] {
-					if match != "" {
-						a.hosts[match] = struct{}{}
-					}
-				}
+			hosts, err := muxer.ParseDomains(route.Match)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse domains: %s", err)
+			}
+			for _, host := range hosts {
+				a.hosts[host] = struct{}{}
 			}
 		}
 	}
-	return a
+	return a, nil
 }
 
 // Len returns the number of hosts that the aggregator currently manages.

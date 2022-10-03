@@ -64,11 +64,15 @@ func (r *IngressRouteReconciler) Reconcile(
 
 	// Now, we have to ensure that all the dependent resources exist by calling all integrations.
 	// For this, we first have to extract information about the ingress.
+	collection, err := switchboard.NewHostCollection().
+		WithTLSHostsIfAvailable(ingressRoute.Spec.TLS).
+		WithRouteHostsIfRequired(ingressRoute.Spec.Routes)
+	if err != nil {
+		logger.Error("failed to parse hosts from ingress route", zap.Error(err))
+		return ctrl.Result{}, err
+	}
 	info := integrations.IngressInfo{
-		Hosts: switchboard.NewHostCollection().
-			WithTLSHostsIfAvailable(ingressRoute.Spec.TLS).
-			WithRouteHostsIfRequired(ingressRoute.Spec.Routes).
-			Hosts(),
+		Hosts: collection.Hosts(),
 		TLSSecretName: ext.AndThen(ingressRoute.Spec.TLS, func(tls traefik.TLS) string {
 			return tls.SecretName
 		}),
