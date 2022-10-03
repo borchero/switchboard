@@ -22,6 +22,12 @@ spec:
         {{ toYaml .Values.podAnnotations | nindent 8 }}
     spec:
       serviceAccountName: {{ .Release.Name }}
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
       containers:
         - name: switchboard
           image: {{ .Values.image.name }}:{{ include "image.tag" . }}

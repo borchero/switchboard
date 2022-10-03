@@ -57,6 +57,7 @@ The following lists all values that may be set when installing this chart (see
 | external-dns.sources[2] | string | `"ingress"` |  |
 | image.name | string | `"ghcr.io/borchero/switchboard"` | The switchboard image to use. |
 | image.tag | string | `nil` | The switchboard image tag to use. If not provided, assumes the same version as the chart. |
+| image.pullSecrets | list | `nil` | Optional list of existing secrets containing credentials for private container registry. |
 | integrations.certManager.certificateTemplate | object | `{}` | The certificate template to use when creating certificates via the cert-manager    integration. Unless `certificateIssuer.create` is set to `true` when installing this    chart, setting `.spec.IssuerRef` is required. |
 | integrations.certManager.enabled | bool | `false` | Whether the cert-manager integration should be enabled. If enabled, `Certificate`    resources are created by Switchboard. Setting this to `true` requires specifying an issuer    via `integrations.certManager.issuer` or letting the chart create its own issuer by    setting `certificateIssuer.create = true` and specifying additional properties for the    certificate issuer. |
 | integrations.externalDNS.enabled | bool | `false` | Whether the external-dns integration should be enabled. If enabled `DNSEndpoint` resources    are created by Switchboard. Setting this to `true` requires specifying the target via    `integrations.externalDNS.target`. |
