@@ -3,6 +3,10 @@ image:
   name: ghcr.io/borchero/switchboard
   # -- The switchboard image tag to use. If not provided, assumes the same version as the chart.
   tag: ~
+  # -- Optionally specify an array of imagePullSecrets to use when pulling from a private
+  #    container registry. Secrets must be manually created in the namespace.
+  # pullSecrets:
+  #   - "myExistingSecret"
 
 # -- The number of manager replicas to use.
 replicas: 1
