@@ -64,9 +64,10 @@ func TestParseRouteHosts(t *testing.T) {
 func TestParseRouteHostsNoop(t *testing.T) {
 	hosts := NewHostCollection()
 	hosts.hosts = map[string]struct{}{"example.com": {}}
-	hosts.WithRouteHostsIfRequired([]traefik.Route{{
+	_, err := hosts.WithRouteHostsIfRequired([]traefik.Route{{
 		Kind:  "Rule",
 		Match: "Host(`www.example.com`)",
 	}})
+	assert.Nil(t, err)
 	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com"})
 }
