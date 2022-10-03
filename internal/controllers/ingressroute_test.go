@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
@@ -157,6 +158,42 @@ func TestIngressMultipleRules(t *testing.T) {
 	})
 }
 
+func TestIngressTargetAnnotation(t *testing.T) {
+	targets := endpoint.Targets{"3.3.3.3", "4.4.4.4"}
+	runTest(t, testCase{
+		Targets: &targets,
+		Ingress: traefik.IngressRoute{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "my-ingress",
+				Annotations: map[string]string{
+					"switchboard.borchero.com/target": strings.Join(targets, ","),
+				},
+			},
+			Spec: traefik.IngressRouteSpec{
+				Routes: []traefik.Route{{
+					Kind:  "Rule",
+					Match: "Host(`example.com`)",
+					Services: []traefik.Service{{
+						LoadBalancerSpec: traefik.LoadBalancerSpec{
+							Name: "nginx",
+						},
+					}},
+				}},
+				TLS: &traefik.TLS{
+					SecretName: "www-tls-certificate",
+					Domains: []traefiktypes.Domain{{
+						Main: "example.net",
+						SANs: []string{
+							"*.example.net",
+						},
+					}},
+				},
+			},
+		},
+		DNSNames: []string{"example.net", "*.example.net"},
+	})
+}
+
 //-------------------------------------------------------------------------------------------------
 // TESTING UTILITIES
 //-------------------------------------------------------------------------------------------------
@@ -164,6 +201,7 @@ func TestIngressMultipleRules(t *testing.T) {
 type testCase struct {
 	Ingress  traefik.IngressRoute
 	DNSNames []string
+	Targets  *endpoint.Targets
 }
 
 func runTest(t *testing.T, test testCase) {
@@ -220,8 +258,12 @@ func runTest(t *testing.T, test testCase) {
 		assert.Nil(t, err)
 		assert.Len(t, endpoint.Spec.Endpoints, len(test.DNSNames))
 		for _, ep := range endpoint.Spec.Endpoints {
-			assert.Len(t, ep.Targets, 1)
-			assert.Equal(t, service.Spec.ClusterIP, ep.Targets[0])
+			if test.Targets != nil {
+				assert.Equal(t, *test.Targets, ep.Targets)
+			} else {
+				assert.Len(t, ep.Targets, 1)
+				assert.Equal(t, service.Spec.ClusterIP, ep.Targets[0])
+			}
 		}
 	}
 }

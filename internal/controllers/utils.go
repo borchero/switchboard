@@ -17,7 +17,7 @@ import (
 )
 
 func integrationsFromConfig(
-	config configv1.Config, client client.Client,
+	config configv1.Config, client client.Client, logger *zap.Logger,
 ) ([]integrations.Integration, error) {
 	result := make([]integrations.Integration, 0)
 	externalDNS := config.Integrations.ExternalDNS
@@ -32,8 +32,8 @@ func integrationsFromConfig(
 				client, switchboard.NewServiceTarget(
 					externalDNS.TargetService.Name,
 					externalDNS.TargetService.Namespace,
-				),
-			))
+					logger,
+				)))
 		} else {
 			result = append(result, integrations.NewExternalDNS(
 				client, switchboard.NewStaticTarget(externalDNS.TargetIPs...),

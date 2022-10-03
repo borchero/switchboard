@@ -41,7 +41,7 @@ func (c *certManager) UpdateResource(
 ) error {
 	// If the ingress does not specify a TLS secret name or specifies no hosts, no certificate
 	// needs to be created.
-	if info.TLSSecretName == nil || len(info.Hosts) == 0 {
+	if info.TLSSecretName == nil || len(info.Hosts.Names) == 0 {
 		certificate := certmanager.Certificate{ObjectMeta: c.objectMeta(owner)}
 		if err := k8s.DeleteIfFound(ctx, c.client, &certificate); err != nil {
 			return fmt.Errorf("failed to delete TLS certificate: %w", err)
@@ -62,7 +62,7 @@ func (c *certManager) UpdateResource(
 		// Spec
 		template := c.template.Spec.DeepCopy()
 		template.SecretName = *info.TLSSecretName
-		template.DNSNames = info.Hosts
+		template.DNSNames = info.Hosts.Names
 		if err := mergo.Merge(&resource.Spec, template, mergo.WithOverride); err != nil {
 			return fmt.Errorf("failed to reconcile specification: %s", err)
 		}

@@ -5,6 +5,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/borchero/switchboard/internal/switchboard"
 )
 
 const (
@@ -14,7 +16,7 @@ const (
 
 // IngressInfo encapsulates information extracted from ingress objects that integrations act upon.
 type IngressInfo struct {
-	Hosts         []string
+	Hosts         switchboard.HostsTarget
 	TLSSecretName *string
 }
 
