@@ -66,10 +66,9 @@ create-cluster: ## Create a local Kubernetes cluster
 
 .PHONY: setup-cluster
 setup-cluster: create-cluster ## Set up the currently connected Kubernetes cluster
-	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
-	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
-	kubectl wait -n metallb-system --for=condition=ready pod -l app=metallb --timeout=60s
-	kubectl apply -f https://kind.sigs.k8s.io/examples/loadbalancer/metallb-configmap.yaml
+	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.5/config/manifests/metallb-native.yaml
+	kubectl wait -n metallb-system --for=condition=ready pod -l app=metallb --timeout=120s
+	kubectl apply -f https://kind.sigs.k8s.io/examples/loadbalancer/metallb-config.yaml
 	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.6/docs/content/reference/dynamic-configuration/traefik.containo.us_ingressroutes.yaml
 	kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
 	helm repo add bitnami https://charts.bitnami.com/bitnami

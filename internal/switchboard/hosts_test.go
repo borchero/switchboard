@@ -27,36 +27,47 @@ func TestParseTLSHosts(t *testing.T) {
 }
 
 func TestParseRouteHosts(t *testing.T) {
-	hosts := NewHostCollection().WithRouteHostsIfRequired([]traefik.Route{{
+	hosts, err := NewHostCollection().WithRouteHostsIfRequired([]traefik.Route{{
 		Kind:  "Rule",
 		Match: "Host(`example.com`)",
 	}})
+	assert.Nil(t, err)
 	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com"})
 
-	hosts = NewHostCollection().WithRouteHostsIfRequired([]traefik.Route{{
+	hosts, err = NewHostCollection().WithRouteHostsIfRequired([]traefik.Route{{
 		Kind:  "Rule",
 		Match: "Host(`example.com`, `www.example.com`)",
 	}})
+	assert.Nil(t, err)
 	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com", "www.example.com"})
 
-	hosts = NewHostCollection().WithRouteHostsIfRequired([]traefik.Route{{
+	hosts, err = NewHostCollection().WithRouteHostsIfRequired([]traefik.Route{{
 		Kind:  "Rule",
 		Match: "Host(`example.com`, `www.example.com`)",
 	}, {
 		Kind:  "Rule",
-		Match: "Host(`v2.example.com`, `www.example.com`) && Prefix(`/test`)",
+		Match: "Host(`v2.example.com`, `www.example.com`) && PathPrefix(`/test`)",
 	}})
+	assert.Nil(t, err)
 	assert.ElementsMatch(
 		t, hosts.Hosts(), []string{"example.com", "www.example.com", "v2.example.com"},
 	)
+
+	hosts, err = NewHostCollection().WithRouteHostsIfRequired([]traefik.Route{{
+		Kind:  "Rule",
+		Match: "Host(`service.namespace`, `service`)",
+	}})
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, hosts.Hosts(), []string{"service.namespace", "service"})
 }
 
 func TestParseRouteHostsNoop(t *testing.T) {
 	hosts := NewHostCollection()
 	hosts.hosts = map[string]struct{}{"example.com": {}}
-	hosts.WithRouteHostsIfRequired([]traefik.Route{{
+	_, err := hosts.WithRouteHostsIfRequired([]traefik.Route{{
 		Kind:  "Rule",
 		Match: "Host(`www.example.com`)",
 	}})
+	assert.Nil(t, err)
 	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com"})
 }

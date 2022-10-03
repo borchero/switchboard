@@ -80,7 +80,7 @@ func TestIngressNoTLSNoDNS(t *testing.T) {
 			Spec: traefik.IngressRouteSpec{
 				Routes: []traefik.Route{{
 					Kind:  "Rule",
-					Match: "Prefix(`/test`)",
+					Match: "PathPrefix(`/test`)",
 					Services: []traefik.Service{{
 						LoadBalancerSpec: traefik.LoadBalancerSpec{
 							Name: "nginx",
