@@ -76,6 +76,11 @@ func (r *IngressRouteReconciler) Reconcile(
 
 	// Then, we can run the integrations
 	for _, itg := range r.integrations {
+		if !r.selector.MatchesIntegration(ingressRoute.Annotations, itg.Name()) {
+			// If integration is ignored, skip it
+			logger.Debug("ignoring integration", zap.String("integration", itg.Name()))
+			continue
+		}
 		if err := itg.UpdateResource(ctx, &ingressRoute, info); err != nil {
 			logger.Error("failed to upsert resource",
 				zap.String("integration", itg.Name()), zap.Error(err),

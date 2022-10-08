@@ -163,9 +163,13 @@ also disable processing for individual ingress routes by setting an additional a
 
 ```yaml
 metadata:
-  annoations:
-    switchboard.borchero.com/ignore: "true"
+  annotations:
+    switchboard.borchero.com/ignore: "all"
 ```
+
+By setting the `ignore` annotation to `all` (or `true`), Switchboard does not process the ingress
+route at all. For more fine-grained control, the value of this annotation can also be set to a
+comma-separated list of integrations (possible values `cert-manager`, `external-dns`).
 
 ## License
 
