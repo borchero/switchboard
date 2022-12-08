@@ -16,7 +16,7 @@ concurrency:
 jobs:
   file-changes:
     name: Gather File Changes
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       chart: ${{ steps.changes.outputs.chart }}
     steps:
@@ -35,7 +35,7 @@ jobs:
     name: Build Image
     needs:
       - file-changes
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -92,7 +92,7 @@ jobs:
     needs:
       - file-changes
       - build-image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
     steps:
       - name: Checkout
