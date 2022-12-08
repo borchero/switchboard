@@ -107,7 +107,7 @@ jobs:
         run: npm install -g bats@1.6.0
         shell: bash
       - name: Download Image for Testing
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: docker-image
           path: /tmp
