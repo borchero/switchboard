@@ -7,7 +7,7 @@ on:
 jobs:
   publish:
     name: Package and Upload
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     container: alpine/helm:3.8.2
     steps:
       - name: Checkout
