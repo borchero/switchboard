@@ -81,7 +81,7 @@ jobs:
           push: false
           outputs: type=oci,dest=/tmp/image.tar
       - name: Upload Image for Testing
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
         with:
           name: docker-image
