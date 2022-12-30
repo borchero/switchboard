@@ -10,5 +10,5 @@ spec:
     privateKeySecretRef:
       name: {{ .Release.Name }}-letsencrypt-issuer
     solvers:
-      {{ toYaml .Values.certificateIssuer.solvers | indent 6 }}
+      {{ toYaml .Values.certificateIssuer.solvers | nindent 6 }}
 {{ end }}
