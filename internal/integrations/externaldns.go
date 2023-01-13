@@ -89,8 +89,9 @@ func (e *externalDNS) UpdateResource(
 
 func (e *externalDNS) objectMeta(owner metav1.Object) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
-		Name:      owner.GetName(),
-		Namespace: owner.GetNamespace(),
+		Name:        owner.GetName(),
+		Namespace:   owner.GetNamespace(),
+		Annotations: owner.GetAnnotations(),
 	}
 }
 
