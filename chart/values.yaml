@@ -24,6 +24,12 @@ resources:
   #   cpu: 50m
   #   memory: 40Mi
 
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
 selector:
   # -- When set, Switchboard only processes ingress routes with the `kubernetes.io/ingress.class`
   #    annotation set to this value.
