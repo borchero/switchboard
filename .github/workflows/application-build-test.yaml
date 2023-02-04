@@ -63,7 +63,7 @@ jobs:
         # Only push when building for a tag or the main branch
         if: github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name == 'main')
       - name: Build Multi-Platform Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -75,7 +75,7 @@ jobs:
       # Only export and upload the image if used for testing
       - name: Export Image for Test Platform
         if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: false
