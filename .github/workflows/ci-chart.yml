@@ -11,7 +11,7 @@ on:
 
 jobs:
   lint:
-    name: Run Linting
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,7 +23,7 @@ jobs:
         working-directory: ./chart
 
   check-docs:
-    name: Check Docs
+    name: Docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
