@@ -1,28 +1,15 @@
-name: Check Code
+name: CI - Application
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths-ignore:
       - chart/**
   push:
-    branches:
-      - main
+    branches: [main]
     paths-ignore:
       - chart/**
 
 jobs:
-  lint:
-    name: Run Linting
-    runs-on: ubuntu-latest
-    container: golangci/golangci-lint:v1.45
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Lint Code
-        run:
-          golangci-lint run --exclude-use-default=false -E goimports -E revive --timeout 10m ./...
-
   test:
     name: Run Unit Tests
     runs-on: ubuntu-latest
@@ -32,12 +19,12 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: ">=1.17.0"
-      - name: Setup Kubernetes Cluster
+          go-version-file: go.mod
+      - name: Setup Kubernetes cluster
         uses: helm/kind-action@v1.5.0
         with:
           cluster_name: switchboard-tests
       - name: Deploy CRDs
         run: make setup-cluster KIND_CLUSTER_NAME=switchboard-tests
-      - name: Run Unit Tests
+      - name: Run unit tests
         run: go test ./...

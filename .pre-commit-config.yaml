@@ -1,0 +1,8 @@
+ci:
+  autofix_prs: false
+
+repos:
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.51.1
+    hooks:
+      - id: golangci-lint

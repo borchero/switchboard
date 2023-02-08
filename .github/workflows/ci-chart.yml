@@ -1,13 +1,11 @@
-name: Check Helm Chart
+name: CI - Chart
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - chart/**
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - chart/**
 
@@ -15,11 +13,12 @@ jobs:
   lint:
     name: Run Linting
     runs-on: ubuntu-latest
-    container: alpine/helm:3.8.2
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Lint Chart
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+      - name: Lint chart
         run: helm lint
         working-directory: ./chart
 
@@ -32,7 +31,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: ">=1.18.0"
+          go-version-file: go.mod
       - name: Download helm-docs
         run: go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.11.0
       - name: Generate README
