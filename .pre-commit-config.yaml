@@ -2,7 +2,7 @@ ci:
   autofix_prs: false
 
 repos:
-  - repo: github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
       - id: trailing-whitespace
