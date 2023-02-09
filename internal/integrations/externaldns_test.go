@@ -34,7 +34,8 @@ func TestExternalDNSUpdateResource(t *testing.T) {
 	integration := NewExternalDNS(client, switchboard.NewServiceTarget(owner.Name, namespace))
 
 	// No resource should be created if no hosts are provided
-	info := IngressInfo{}
+	var info IngressInfo
+
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 	assert.Len(t, getDNSEndpoints(ctx, t, client, namespace), 0)

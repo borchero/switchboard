@@ -48,7 +48,8 @@ func TestEnqueueMapFunc(t *testing.T) {
 
 	// Check whether distinct services are returned for enqueue
 	names := []string{"my-service-1", "my-service-2", "my-service-3"}
-	found := []string{}
+	var found []string
+
 	for _, obj := range enqueuer(&service1) {
 		if obj.Namespace == namespace {
 			found = append(found, obj.Name)
