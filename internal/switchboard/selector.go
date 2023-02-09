@@ -43,7 +43,7 @@ func (s Selector) Matches(annotations map[string]string) bool {
 
 // MatchesIntegration returns whether the provided set of annotations match the provided
 // integration.
-func (s Selector) MatchesIntegration(annotations map[string]string, integration string) bool {
+func (Selector) MatchesIntegration(annotations map[string]string, integration string) bool {
 	if ignore, ok := annotations[ignoreAnnotationKey]; ok {
 		if ignore == "true" || ignore == "all" {
 			return false
