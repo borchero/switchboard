@@ -10,7 +10,17 @@ on:
       - chart/**
 
 jobs:
-  test:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    container: golangci/golangci-lint:v1.50
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run lint
+        run: golangci-lint run ./...
+
+  unit-test:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
