@@ -47,7 +47,8 @@ func (r *IngressRouteReconciler) Reconcile(
 	logger := r.logger.With(zap.String("name", req.String()))
 
 	// First, we retrieve the full resource
-	ingressRoute := traefik.IngressRoute{}
+	var ingressRoute traefik.IngressRoute
+
 	if err := r.Get(ctx, req.NamespacedName, &ingressRoute); err != nil {
 		if !apierrs.IsNotFound(err) {
 			logger.Error("unable to query for ingress route", zap.Error(err))
