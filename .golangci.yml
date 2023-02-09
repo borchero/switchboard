@@ -5,4 +5,4 @@ linters:
     - goimports
     - revive
 issues:
-  exclude-use-default: false
+  exclude-use-default: true
