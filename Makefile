@@ -20,10 +20,6 @@ help: ## Display this help.
 #--------------------------------------------------------------------------------------------------
 ##@ Development
 
-.PHONY: generate
-generate: controller-gen ## Generate code for custom resources
-	$(CONTROLLER_GEN) object paths="./..."
-
 .PHONY: docs
 docs: ## Generate helm docs in chart/README.md
 	cd $(CURDIR)/chart
@@ -48,11 +44,11 @@ e2e-tests: create-cluster ## Run end-to-end tests
 ##@ Build
 
 .PHONY: build
-build: generate ## Build manager binary.
+build: ## Build manager binary.
 	go build -o bin/manager cmd/main.go
 
 .PHONY: run
-run: generate ## Run a controller from your host.
+run: ## Run a controller from your host.
 	go run cmd/main.go --config dev/config.yaml
 
 #--------------------------------------------------------------------------------------------------
@@ -79,28 +75,3 @@ setup-cluster: create-cluster ## Set up the currently connected Kubernetes clust
 .PHONY: teardown-cluster
 teardown-cluster: ## Tear down a locally running Kubernetes cluster
 	kind delete cluster --name ${KIND_CLUSTER_NAME} || :
-
-#--------------------------------------------------------------------------------------------------
-##@ Tool Installation
-
-CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
-.PHONY: controller-gen
-controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
-
-#--------------------------------------------------------------------------------------------------
-# HELPERS
-#--------------------------------------------------------------------------------------------------
-# go-get-tool will 'go get' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-get-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-go mod init tmp ;\
-echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
-endef
