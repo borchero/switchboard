@@ -1,0 +1,15 @@
+ci:
+  autofix_prs: false
+  skip: [golangci-lint]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.51.1
+    hooks:
+      - id: golangci-lint

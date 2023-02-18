@@ -22,7 +22,7 @@ function await_pod_ready() {
             jq -r 'select(
                 .status.phase == "Running"
                 and (
-                    [ .status.conditions[] | select(.type == "Ready" and .status == "True") ] 
+                    [ .status.conditions[] | select(.type == "Ready" and .status == "True") ]
                     | length
                 ) == 1
             )'
@@ -47,7 +47,7 @@ function await_pod_running() {
         kubectl get pod $1 -o json | \
             jq -r 'select(
                 .status.phase == "Running"
-                and ([ 
+                and ([
                     .status.conditions[]
                     | select(.type == "Initialized" and .status == "True")
                 ] | length) == 1

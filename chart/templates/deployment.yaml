@@ -48,7 +48,7 @@ spec:
               path: /healthz
               port: 8081
             periodSeconds: 30
-          resources: 
+          resources:
             {{ toYaml .Values.resources | nindent 12 }}
       volumes:
         - name: config

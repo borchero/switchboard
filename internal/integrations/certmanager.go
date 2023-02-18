@@ -77,7 +77,7 @@ func (c *certManager) UpdateResource(
 // UTILS
 //-------------------------------------------------------------------------------------------------
 
-func (c *certManager) objectMeta(parent metav1.Object) metav1.ObjectMeta {
+func (*certManager) objectMeta(parent metav1.Object) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Name:      fmt.Sprintf("%s-tls", parent.GetName()),
 		Namespace: parent.GetNamespace(),
