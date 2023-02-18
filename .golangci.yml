@@ -8,3 +8,9 @@ issues:
   include:
     - EXC0002
     - EXC0014
+linters-settings:
+  revive:
+    rules:
+      - name: unused-receiver
+        severity: warning
+        disabled: false

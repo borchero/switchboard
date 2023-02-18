@@ -44,7 +44,7 @@ func (t serviceTarget) Targets(ctx context.Context, client client.Client) ([]str
 	return t.targetsFromService(service), nil
 }
 
-func (t serviceTarget) targetsFromService(service v1.Service) []string {
+func (serviceTarget) targetsFromService(service v1.Service) []string {
 	// Try to get load balancer IPs/hostnames...
 	targets := make([]string, 0)
 	for _, ingress := range service.Status.LoadBalancer.Ingress {
@@ -87,6 +87,6 @@ func (t staticTarget) Targets(ctx context.Context, client client.Client) ([]stri
 	return t.ips, nil
 }
 
-func (t staticTarget) NamespacedName() *types.NamespacedName {
+func (staticTarget) NamespacedName() *types.NamespacedName {
 	return nil
 }
