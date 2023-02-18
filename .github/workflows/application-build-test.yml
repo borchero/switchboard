@@ -74,13 +74,13 @@ jobs:
             'main') }}
           tags: ${{ steps.meta.outputs.tags }}
       # Only export and upload the image if used for testing
-      - name: Export umage for test platform
+      - name: Export image for test platform
         if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
         uses: docker/build-push-action@v4
         with:
           context: .
           push: false
-          outputs: type=oci,dest=/tmp/image.tar
+          outputs: type=docker,dest=/tmp/image.tar
       - name: Upload image for testing
         uses: actions/upload-artifact@v3
         if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
@@ -116,15 +116,15 @@ jobs:
           config: chart/tests/kind/actions.yaml
       - name: Import Docker image
         run: |
-          IMAGE_ID=$(docker import /tmp/image.tar | rev | cut -d' ' -f1 | rev)
+          IMAGE_ID=$(docker load -i /tmp/image.tar | rev | cut -d' ' -f1 | rev)
           docker tag $IMAGE_ID $KIND_REGISTRY/switchboard:dev
           docker push $KIND_REGISTRY/switchboard:dev
       - name: Set image tag
         run: |
-            yq -i '
-              .image.name = "${{ env.KIND_REGISTRY }}/switchboard" |
-              .image.tag = "dev"
-            ' chart/tests/values/base.yaml
+          yq -i '
+            .image.name = "${{ env.KIND_REGISTRY }}/switchboard" |
+            .image.tag = "dev"
+          ' chart/tests/values/base.yaml
       - name: Run tests
         run: bats ./tests -t
         working-directory: ./chart
