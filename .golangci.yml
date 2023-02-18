@@ -5,4 +5,6 @@ linters:
     - goimports
     - revive
 issues:
-  exclude-use-default: true
+  include:
+    - EXC0002
+    - EXC0014
