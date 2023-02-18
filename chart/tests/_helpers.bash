@@ -36,6 +36,9 @@ function await_pod_ready() {
         sleep 2
     done
 
+    kubectl describe pod $1
+    kubectl logs $1
+
     echo "${POD_NAME} never became ready."
     return 1
 }
