@@ -47,7 +47,8 @@ func TestServiceTargetTargets(t *testing.T) {
 }
 
 func TestServiceTargetTargetsFromService(t *testing.T) {
-	target := serviceTarget{}
+	var target serviceTarget
+
 	service := v1.Service{
 		Spec: v1.ServiceSpec{ClusterIPs: []string{"10.0.0.5"}},
 	}
