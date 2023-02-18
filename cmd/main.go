@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/controllers"
@@ -10,6 +11,7 @@ import (
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
 	"go.uber.org/zap"
+	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,16 +33,26 @@ func main() {
 	logger := zeus.Logger(ctx)
 	defer zeus.Sync()
 
-	// Load the options and initialize the schema
-	var err error
-	options := ctrl.Options{Scheme: runtime.NewScheme()}
+	// Load the config file if available
 	var config configv1.Config
 	if cfgFile != "" {
-		// Load the config file if present
-		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(cfgFile).OfKind(&config))
+		file, err := os.Open(cfgFile)
 		if err != nil {
-			logger.Fatal("failed to load config file", zap.Error(err))
+			logger.Fatal("failed to open config file", zap.Error(err))
 		}
+		if err := yaml.NewDecoder(file).Decode(config); err != nil {
+			logger.Fatal("failed to parse config file", zap.Error(err))
+		}
+	}
+
+	// Initialize the options and the schema
+	options := ctrl.Options{
+		Scheme:                  runtime.NewScheme(),
+		LeaderElection:          config.LeaderElection.LeaderElect,
+		LeaderElectionID:        config.LeaderElection.ResourceName,
+		LeaderElectionNamespace: config.LeaderElection.ResourceNamespace,
+		MetricsBindAddress:      config.Metrics.BindAddress,
+		HealthProbeBindAddress:  config.Health.HealthProbeBindAddress,
 	}
 	initScheme(config, options.Scheme)
 
