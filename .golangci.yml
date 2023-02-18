@@ -13,4 +13,3 @@ linters-settings:
     rules:
       - name: unused-receiver
         severity: warning
-        disabled: false
