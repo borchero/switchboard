@@ -87,7 +87,7 @@ func (e *externalDNS) UpdateResource(
 // UTILS
 //-------------------------------------------------------------------------------------------------
 
-func (e *externalDNS) objectMeta(owner metav1.Object) metav1.ObjectMeta {
+func (*externalDNS) objectMeta(owner metav1.Object) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Name:        owner.GetName(),
 		Namespace:   owner.GetNamespace(),
@@ -118,7 +118,7 @@ func (e *externalDNS) endpoints(hosts []string, targets []string) []*endpoint.En
 	return endpoints
 }
 
-func (e *externalDNS) recordType(target string) string {
+func (*externalDNS) recordType(target string) string {
 	if govalidator.IsIPv4(target) {
 		return "A"
 	}

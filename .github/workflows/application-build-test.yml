@@ -9,8 +9,9 @@ on:
   push:
     branches:
       - main
+
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -22,7 +23,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Gather File Changes
+      - name: Gather file changes
         uses: dorny/paths-filter@v2
         id: changes
         with:
@@ -39,9 +40,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Docker Buildx
+      - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v2
-      - name: Assemble Metadata
+      - name: Assemble metadata
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -54,7 +55,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-      - name: Login to GitHub Container Registry
+      - name: Login to GitHub container registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -62,7 +63,7 @@ jobs:
           password: ${{ github.token }}
         # Only push when building for a tag or the main branch
         if: github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name == 'main')
-      - name: Build Multi-Platform Image
+      - name: Build multi-platform image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -73,14 +74,14 @@ jobs:
             'main') }}
           tags: ${{ steps.meta.outputs.tags }}
       # Only export and upload the image if used for testing
-      - name: Export Image for Test Platform
+      - name: Export image for test platform
         if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
         uses: docker/build-push-action@v4
         with:
           context: .
           push: false
-          outputs: type=oci,dest=/tmp/image.tar
-      - name: Upload Image for Testing
+          outputs: type=docker,dest=/tmp/image.tar
+      - name: Upload image for testing
         uses: actions/upload-artifact@v3
         if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
         with:
@@ -89,47 +90,41 @@ jobs:
 
   e2e-tests:
     name: Test Helm Chart
-    needs:
-      - file-changes
-      - build-image
+    needs: [file-changes, build-image]
     runs-on: ubuntu-latest
     if: needs.file-changes.outputs.chart == 'true' && github.ref_type != 'tag'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Docker Buildx
+      - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v2
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
           node-version: "16"
-      - name: Install Bats
+      - name: Install bats
         run: npm install -g bats@1.6.0
         shell: bash
-      - name: Download Image for Testing
+      - name: Download image for testing
         uses: actions/download-artifact@v3
         with:
           name: docker-image
           path: /tmp
-      - name: Setup Kubernetes Cluster
+      - name: Setup Kubernetes cluster
         uses: container-tools/kind-action@v2.0.0
         with:
           config: chart/tests/kind/actions.yaml
-      - name: Load Docker Image
+      - name: Import Docker image
         run: |
-          docker load -i /tmp/image.tar
-          docker image ls
           IMAGE_ID=$(docker load -i /tmp/image.tar | rev | cut -d' ' -f1 | rev)
           docker tag $IMAGE_ID $KIND_REGISTRY/switchboard:dev
           docker push $KIND_REGISTRY/switchboard:dev
-      - name: Specify Image Tag
-        uses: mikefarah/yq@v4.30.8
-        with:
-          cmd: |
-            yq -i '
-              .image.name = "${{ env.KIND_REGISTRY }}/switchboard" |
-              .image.tag = "dev"
-            ' chart/tests/values/base.yaml
-      - name: Run Tests
+      - name: Set image tag
+        run: |
+          yq -i '
+            .image.name = "${{ env.KIND_REGISTRY }}/switchboard" |
+            .image.tag = "dev"
+          ' chart/tests/values/base.yaml
+      - name: Run tests
         run: bats ./tests -t
         working-directory: ./chart

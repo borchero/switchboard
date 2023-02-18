@@ -1,12 +1,13 @@
 // Package v1 contains API Schema definitions for the config v1 API group
-//+kubebuilder:object:generate=true
-//+groupName=config.switchboard.borchero.com
 package v1
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
+
+//+kubebuilder:object:generate=true
+//+groupName=config.switchboard.borchero.com
 
 var (
 	// GroupVersion is group version used to register these objects

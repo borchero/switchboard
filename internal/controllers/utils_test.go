@@ -17,7 +17,8 @@ func TestIntegrationsFromConfig(t *testing.T) {
 	client := k8tests.NewClient(t, scheme)
 
 	// Test all configurations of integrations
-	config := configv1.Config{}
+	var config configv1.Config
+
 	integrations, err := integrationsFromConfig(config, client)
 	require.Nil(t, err)
 	assert.Len(t, integrations, 0)

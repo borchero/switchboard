@@ -37,7 +37,8 @@ func TestCertManagerUpdateResource(t *testing.T) {
 	// Nothing should be created if no hosts or no tls is set
 	tlsName := "test-tls"
 
-	info := IngressInfo{}
+	var info IngressInfo
+
 	err = integration.UpdateResource(ctx, &owner, info)
 	require.Nil(t, err)
 	assert.Len(t, getCertificates(ctx, t, client, namespace), 0)
