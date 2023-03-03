@@ -40,7 +40,7 @@ func main() {
 		if err != nil {
 			logger.Fatal("failed to open config file", zap.Error(err))
 		}
-		if err := yaml.NewDecoder(file).Decode(config); err != nil {
+		if err := yaml.NewDecoder(file).Decode(&config); err != nil {
 			logger.Fatal("failed to parse config file", zap.Error(err))
 		}
 	}

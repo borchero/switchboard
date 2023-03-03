@@ -1,7 +1,5 @@
 {{ define "config" }}
 {{- $cfg := .Values.config -}}
-apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
-kind: ControllerManagerConfig
 health:
   healthProbeBindAddress: :8081
 leaderElection:
