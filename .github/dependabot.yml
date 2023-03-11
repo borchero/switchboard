@@ -2,15 +2,19 @@ version: 2
 updates:
   # Update GitHub actions
   - directory: /
-    open-pull-requests-limit: 5
     package-ecosystem: github-actions
     schedule:
-      interval: weekly
+      interval: monthly
       day: saturday
   # Update Go dependencies
   - directory: /
-    open-pull-requests-limit: 5
     package-ecosystem: gomod
     schedule:
-      interval: weekly
+      interval: monthly
+      day: saturday
+  # Update Docker base images
+  - directory: /
+    package-ecosystem: docker
+    schedule:
+      interval: monthly
       day: saturday
