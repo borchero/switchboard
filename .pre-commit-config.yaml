@@ -13,3 +13,4 @@ repos:
     rev: v1.51.2
     hooks:
       - id: golangci-lint
+        args: ["--go", "1.18"]

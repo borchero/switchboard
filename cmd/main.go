@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"io/ioutil"
+	"os"
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/controllers"
@@ -36,7 +36,7 @@ func main() {
 	// Load the config file if available
 	var config configv1.Config
 	if cfgFile != "" {
-		contents, err := ioutil.ReadFile(cfgFile)
+		contents, err := os.ReadFile(cfgFile)
 		if err != nil {
 			logger.Fatal("failed to read config file", zap.Error(err))
 		}

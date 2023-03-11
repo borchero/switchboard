@@ -7,7 +7,6 @@ import (
 	"github.com/borchero/switchboard/internal/k8s"
 	"github.com/imdario/mergo"
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
-	v1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -15,12 +14,12 @@ import (
 
 type certManager struct {
 	client   client.Client
-	template v1.Certificate
+	template certmanager.Certificate
 }
 
 // NewCertManager initializes a new cert-manager integration which creates certificates which use
 // the provided issuer.
-func NewCertManager(client client.Client, template v1.Certificate) Integration {
+func NewCertManager(client client.Client, template certmanager.Certificate) Integration {
 	return &certManager{client, template}
 }
 
