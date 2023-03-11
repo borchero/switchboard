@@ -11,7 +11,6 @@ import (
 	certmanager "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
 	"go.uber.org/zap"
-	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -21,6 +20,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/external-dns/endpoint"
+	"sigs.k8s.io/yaml"
 )
 
 func main() {
@@ -36,11 +36,11 @@ func main() {
 	// Load the config file if available
 	var config configv1.Config
 	if cfgFile != "" {
-		file, err := os.Open(cfgFile)
+		contents, err := os.ReadFile(cfgFile)
 		if err != nil {
-			logger.Fatal("failed to open config file", zap.Error(err))
+			logger.Fatal("failed to read config file", zap.Error(err))
 		}
-		if err := yaml.NewDecoder(file).Decode(&config); err != nil {
+		if err := yaml.Unmarshal(contents, &config); err != nil {
 			logger.Fatal("failed to parse config file", zap.Error(err))
 		}
 	}

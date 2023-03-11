@@ -4,6 +4,7 @@ linters:
   enable:
     - goimports
     - revive
+    - stylecheck
 issues:
   include:
     - EXC0002
