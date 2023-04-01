@@ -11,8 +11,8 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/traefik/traefik/v2 v2.9.9
 	go.uber.org/zap v1.24.0
-	k8s.io/api v0.26.2
-	k8s.io/apimachinery v0.26.2
+	k8s.io/api v0.26.3
+	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.2
 	sigs.k8s.io/controller-runtime v0.14.5
 	sigs.k8s.io/external-dns v0.13.3
