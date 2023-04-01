@@ -91,8 +91,8 @@ github.com/flowstack/go-jsonschema v0.1.1/go.mod h1:yL7fNggx1o8rm9RlgXv7hTBWxdBM
 github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4HY=
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/go-acme/lego/v4 v4.10.0 h1:G4Cgq4lsPxCjqsTKsqhUjRs3oKAGVMFPhvrl6kzzs44=
-github.com/go-acme/lego/v4 v4.10.0/go.mod h1:EMbf0Jmqwv94nJ5WL9qWnSXIBZnvsS9gNypansHGc6U=
+github.com/go-acme/lego/v4 v4.10.2 h1:5eW3qmda5v/LP21v1Hj70edKY1jeFZQwO617tdkwp6Q=
+github.com/go-acme/lego/v4 v4.10.2/go.mod h1:EMbf0Jmqwv94nJ5WL9qWnSXIBZnvsS9gNypansHGc6U=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
@@ -316,8 +316,8 @@ github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/traefik/paerser v0.2.0 h1:zqCLGSXoNlcBd+mzqSCLjon/I6phqIjeJL2xFB2ysgQ=
 github.com/traefik/paerser v0.2.0/go.mod h1:afzaVcgF8A+MpTnPG4wBr4whjanCSYA6vK5RwaYVtRc=
-github.com/traefik/traefik/v2 v2.9.8 h1:vRdhEJc+qLICTXsOwcV+q8z25HFxqS7YeCkf1X08+CE=
-github.com/traefik/traefik/v2 v2.9.8/go.mod h1:PqqD+i1/9HprbfjSRXmSC3gk8IXR47fnKdf+dDq2nWI=
+github.com/traefik/traefik/v2 v2.9.9 h1:j5GfBIaSUSOYzf45V/m8LpWKSLnycidCwHCmTwBunZk=
+github.com/traefik/traefik/v2 v2.9.9/go.mod h1:V1Xf/2ht2NyeYXEPWaA/5C+up4aPYxxcU4ajIyhzERU=
 github.com/vulcand/predicate v1.2.0 h1:uFsW1gcnnR7R+QTID+FVcs0sSYlIGntoGOTb3rQJt50=
 github.com/vulcand/predicate v1.2.0/go.mod h1:VipoNYXny6c8N381zGUWkjuuNHiRbeAZhE7Qm9c+2GA=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=

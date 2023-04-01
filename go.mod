@@ -9,7 +9,7 @@ require (
 	github.com/imdario/mergo v0.3.13
 	github.com/jetstack/cert-manager v1.7.2
 	github.com/stretchr/testify v1.8.2
-	github.com/traefik/traefik/v2 v2.9.8
+	github.com/traefik/traefik/v2 v2.9.9
 	go.uber.org/zap v1.24.0
 	k8s.io/api v0.26.2
 	k8s.io/apimachinery v0.26.2
@@ -29,7 +29,7 @@ require (
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/go-acme/lego/v4 v4.10.0 // indirect
+	github.com/go-acme/lego/v4 v4.10.2 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
