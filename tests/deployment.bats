@@ -20,6 +20,7 @@ load lib/helpers
     sleep 0.1
     expect_resource_exists dnsendpoint my-ingress
     expect_resource_exists certificate my-ingress-tls
+    expect_resource_exists secret www-tls-certificate
 }
 
 @test "check resources deleted" {
