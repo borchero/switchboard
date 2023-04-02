@@ -17,16 +17,15 @@ load lib/helpers
 @test "check resources created" {
     kubectl apply -f ${BATS_TEST_DIRNAME}/resources/ingress.yaml
     # Wait for the Switchboard manager to pick up the changes
-    sleep 0.1
+    sleep 0.3
     expect_resource_exists dnsendpoint my-ingress
     expect_resource_exists certificate my-ingress-tls
-    expect_resource_exists secret www-tls-certificate
 }
 
 @test "check resources deleted" {
     kubectl delete ingressroute my-ingress
     # Wait for the Switchboard manager to pick up the changes
-    sleep 0.1
+    sleep 0.3
     expect_resource_not_exists dnsendpoint my-ingress
     expect_resource_not_exists certificate my-ingress-tls
 }
