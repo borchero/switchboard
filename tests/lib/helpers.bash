@@ -4,10 +4,10 @@ function install() {
     # Install chart
     helm repo add bitnami https://charts.bitnami.com/bitnami
     helm repo add jetstack https://charts.jetstack.io
-    helm dependency build
+    helm dependency build ${BATS_TEST_DIRNAME}/../chart
     helm install \
-        --values ${BATS_TEST_DIRNAME}/values/base.yaml \
-        switchboard ${BATS_TEST_DIRNAME}/..
+        --values ${BATS_TEST_DIRNAME}/config/switchboard.yaml \
+        switchboard ${BATS_TEST_DIRNAME}/../chart
 }
 
 function uninstall() {
@@ -64,4 +64,16 @@ function await_pod_running() {
 
     echo "${POD_NAME} never became running."
     return 1
+}
+
+function expect_resource_exists() {
+    RESOURCE_TYPE=$1
+    RESOURCE_NAME=$2
+    kubectl get $RESOURCE_TYPE $RESOURCE_NAME
+}
+
+function expect_resource_not_exists() {
+    RESOURCE_TYPE=$1
+    RESOURCE_NAME=$2
+    kubectl get $RESOURCE_TYPE $RESOURCE_NAME && return 1 || return 0
 }

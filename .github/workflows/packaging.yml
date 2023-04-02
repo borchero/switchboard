@@ -1,9 +1,8 @@
-name: Build and Test Container Image
+name: Packaging
 on:
   release:
     types: [published]
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
@@ -12,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-image:
-    name: Build Image
+  container-image:
+    name: Container Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,26 +33,24 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
       - name: Login to GitHub container registry
+        # We only need to log in if we want to push to GHCR
+        if: github.event_name == 'release' || github.event_name == 'push'
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-        # Only push when building for a tag or the main branch
-        if: github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name == 'main')
       - name: Build multi-platform image
         uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           # Only push when building for a tag or the main branch
-          push:
-            ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name ==
-            'main') }}
+          push: ${{ github.event_name == 'release' || github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
       # Only export and upload the image if used for testing
       - name: Export image for test platform
-        if: github.ref_type != 'tag'
+        if: github.event_name != 'release'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -61,16 +58,45 @@ jobs:
           outputs: type=docker,dest=/tmp/image.tar
       - name: Upload image for testing
         uses: actions/upload-artifact@v3
-        if: github.ref_type != 'tag'
+        if: github.event_name != 'release'
         with:
           name: docker-image
           path: /tmp/image.tar
 
-  e2e-tests:
-    name: Test Helm Chart
-    needs: build-image
+  helm-chart:
+    name: Helm Chart
     runs-on: ubuntu-latest
-    if: github.ref_type != 'tag'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+      - name: Login to GitHub OCI Registry
+        run: |
+          echo ${{ github.token }} | \
+            helm registry login ghcr.io --username ${{ github.actor }} --password-stdin
+      - name: Download Dependencies
+        run: helm dependency build
+        working-directory: ./chart
+      - name: Package Chart
+        run: |
+          VERSION=${{ github.ref_name }}
+          helm package . \
+            --app-version ${VERSION#v} \
+            --version ${VERSION#v}
+        working-directory: ./chart
+      - name: Push Chart
+        if: github.event_name == 'release'
+        run: |
+          VERSION=${{ github.ref_name }}
+          helm push switchboard-${VERSION#v}.tgz oci://ghcr.io/${{ github.actor }}/charts
+        working-directory: ./chart
+
+  e2e-tests:
+    name: End-to-end Tests
+    if: github.ref_type != 'release'
+    needs: container-image
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -88,21 +114,16 @@ jobs:
         with:
           name: docker-image
           path: /tmp
+      - name: Setup just
+        uses: extractions/setup-just@v1
       - name: Setup Kubernetes cluster
         uses: container-tools/kind-action@v2.0.0
         with:
-          config: chart/tests/kind/actions.yaml
+          config: tests/config/kind.yaml
       - name: Import Docker image
         run: |
           IMAGE_ID=$(docker load -i /tmp/image.tar | rev | cut -d' ' -f1 | rev)
           docker tag $IMAGE_ID $KIND_REGISTRY/switchboard:dev
           docker push $KIND_REGISTRY/switchboard:dev
-      - name: Set image tag
-        run: |
-          yq -i '
-            .image.name = "${{ env.KIND_REGISTRY }}/switchboard" |
-            .image.tag = "dev"
-          ' chart/tests/values/base.yaml
       - name: Run tests
-        run: bats ./tests -t
-        working-directory: ./chart
+        run: just e2e-test-ci "${{ env.KIND_REGISTRY }}/switchboard" "dev"

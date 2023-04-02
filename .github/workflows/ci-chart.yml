@@ -1,7 +1,6 @@
 name: CI - Chart
 on:
   pull_request:
-    branches: [main]
     paths:
       - chart/**
   push:

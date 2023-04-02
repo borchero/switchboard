@@ -1,0 +1,12 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: my-ingress
+spec:
+  routes:
+    - kind: Rule
+      match: Host(`www.example.com`)
+      services:
+        - name: nginx
+  tls:
+    secretName: www-tls-certificate

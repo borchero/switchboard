@@ -2,6 +2,7 @@
 
 ![Type: application](https://img.shields.io/badge/Type-application-informational)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/switchboard)](https://artifacthub.io/packages/search?repo=switchboard)
+![License](https://img.shields.io/github/license/borchero/switchboard-chart)
 
 This directory contains the Helm chart as well as detailed instructions for deploying the
 Switchboard Kubernetes operator. Please read through this repository's root README to understand
@@ -45,6 +46,7 @@ The following lists all values that may be set when installing this chart (see
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| affinity | object | `{}` |  |
 | cert-manager.install | bool | `false` | Whether the cert-manager chart should be installed.    See: https://artifacthub.io/packages/helm/cert-manager/cert-manager |
 | cert-manager.installCRDs | bool | `true` |  |
 | certificateIssuer.create | bool | `false` | Whether an ACME certificate issuer should be created for use with cert-manager. |
@@ -57,7 +59,6 @@ The following lists all values that may be set when installing this chart (see
 | external-dns.sources[2] | string | `"ingress"` |  |
 | image.name | string | `"ghcr.io/borchero/switchboard"` | The switchboard image to use. |
 | image.tag | string | `nil` | The switchboard image tag to use. If not provided, assumes the same version as the chart. |
-| image.pullSecrets | list | `nil` | Optional list of existing secrets containing credentials for private container registry. |
 | integrations.certManager.certificateTemplate | object | `{}` | The certificate template to use when creating certificates via the cert-manager    integration. Unless `certificateIssuer.create` is set to `true` when installing this    chart, setting `.spec.IssuerRef` is required. |
 | integrations.certManager.enabled | bool | `false` | Whether the cert-manager integration should be enabled. If enabled, `Certificate`    resources are created by Switchboard. Setting this to `true` requires specifying an issuer    via `integrations.certManager.issuer` or letting the chart create its own issuer by    setting `certificateIssuer.create = true` and specifying additional properties for the    certificate issuer. |
 | integrations.externalDNS.enabled | bool | `false` | Whether the external-dns integration should be enabled. If enabled `DNSEndpoint` resources    are created by Switchboard. Setting this to `true` requires specifying the target via    `integrations.externalDNS.target`. |
@@ -66,9 +67,11 @@ The following lists all values that may be set when installing this chart (see
 | integrations.externalDNS.targetService.namespace | string | `nil` | The namespace of the (Traefik) service whose IP address should be used for DNS records. |
 | metrics.enabled | bool | `true` | Whether the metrics endpoint should be enabled. |
 | metrics.port | int | `9090` | The port on which Prometheus metrics can be scraped on path `/metrics`. |
+| nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` | Annotations to set on the switchboard pod. |
 | podMonitor.create | bool | `false` | Whether a PodMonitor should be created which can be used to scrape the metrics endpoint. Ignored if `metrics.enabled` is set to `false` |
 | podMonitor.namespace | string | `nil` | The namespace where the monitor should be created in. Defaults to the release namespace. |
 | replicas | int | `1` | The number of manager replicas to use. |
 | resources | object | `{}` | The resources to use for the operator. |
 | selector.ingressClass | string | `nil` | When set, Switchboard only processes ingress routes with the `kubernetes.io/ingress.class`    annotation set to this value. |
+| tolerations | list | `[]` |  |
