@@ -12,6 +12,6 @@ integrations:
       name: kube-dns
       namespace: kube-system
 external-dns:
-  enabled: true
+  install: true
 cert-manager:
-  enabled: true
+  install: true

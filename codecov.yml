@@ -1,0 +1,8 @@
+codecov:
+  branch: main
+comment:
+  layout: header,reach,diff,flags,files,footer
+  require_changes: false
+flag_management:
+  default_rules:
+    carryforward: true

@@ -4,6 +4,7 @@
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/switchboard)](https://artifacthub.io/packages/search?repo=switchboard)
 [![CI - Application](https://github.com/borchero/switchboard/actions/workflows/ci-application.yml/badge.svg?branch=main)](https://github.com/borchero/switchboard/actions/workflows/ci-application.yml)
 [![CI - Chart](https://github.com/borchero/switchboard/actions/workflows/ci-chart.yml/badge.svg?branch=main)](https://github.com/borchero/switchboard/actions/workflows/ci-chart.yml)
+[![codecov](https://codecov.io/gh/borchero/switchboard/branch/main/graph/badge.svg?token=CI8KJLDRUP)](https://codecov.io/gh/borchero/switchboard)
 
 Switchboard is a Kubernetes operator that automates the creation of DNS records and TLS
 certificates when using [Traefik](https://github.com/traefik/traefik) v2 and its
