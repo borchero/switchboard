@@ -65,6 +65,7 @@ jobs:
 
   helm-chart:
     name: Helm Chart
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -86,7 +87,6 @@ jobs:
             --version ${VERSION#v}
         working-directory: ./chart
       - name: Push Chart
-        if: github.event_name == 'release'
         run: |
           VERSION=${{ github.ref_name }}
           helm push switchboard-${VERSION#v}.tgz oci://ghcr.io/${{ github.actor }}/charts
@@ -94,7 +94,7 @@ jobs:
 
   e2e-tests:
     name: End-to-end Tests
-    if: github.ref_type != 'release'
+    if: github.event_name != 'release'
     needs: container-image
     runs-on: ubuntu-latest
     steps:
