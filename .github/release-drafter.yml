@@ -74,6 +74,9 @@ categories:
   - title: 🏗️ Testing
     labels:
       - test
+  - title: ⚙️ Automation
+    labels:
+      - ci
   - title: 📝 Documentation
     labels:
       - documentation
@@ -81,7 +84,6 @@ categories:
     labels:
       - build
       - chore
-      - ci
       - refactor
       - revert
       - style
