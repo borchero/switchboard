@@ -6,7 +6,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/borchero/zeus v1.0.0
 	github.com/google/uuid v1.3.0
-	github.com/imdario/mergo v0.3.13
+	github.com/imdario/mergo v0.3.15
 	github.com/jetstack/cert-manager v1.7.2
 	github.com/stretchr/testify v1.8.2
 	github.com/traefik/traefik/v2 v2.9.10
@@ -14,7 +14,7 @@ require (
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.3
-	sigs.k8s.io/controller-runtime v0.14.5
+	sigs.k8s.io/controller-runtime v0.14.6
 	sigs.k8s.io/external-dns v0.13.4
 	sigs.k8s.io/yaml v1.3.0
 )
