@@ -6,15 +6,27 @@ updates:
     schedule:
       interval: monthly
       day: saturday
+    commit-message:
+      prefix: ci
+    labels:
+      - dependencies
   # Update Go dependencies
   - directory: /
     package-ecosystem: gomod
     schedule:
       interval: monthly
       day: saturday
+    commit-message:
+      prefix: build(go)
+    labels:
+      - dependencies
   # Update Docker base images
   - directory: /
     package-ecosystem: docker
     schedule:
       interval: monthly
       day: saturday
+    commit-message:
+      prefix: build(docker)
+    labels:
+      - dependencies
