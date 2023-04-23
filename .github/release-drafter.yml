@@ -47,6 +47,7 @@ version-resolver:
 # >>> RELEASE CONFIGURATION
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
+category-template: "### $TITLE"
 change-template: "- $TITLE by @$AUTHOR in [#$NUMBER]($URL)"
 replacers:
   # remove conventional commit tag & scope from change list
