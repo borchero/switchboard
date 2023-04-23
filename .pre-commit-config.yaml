@@ -1,6 +1,7 @@
 ci:
   autofix_prs: false
   skip: [golangci-lint]
+  autoupdate_commit_msg: "style: pre-commit autoupdate"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
