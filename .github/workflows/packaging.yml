@@ -117,7 +117,7 @@ jobs:
       - name: Setup just
         uses: extractions/setup-just@v1
       - name: Setup Kubernetes cluster
-        uses: container-tools/kind-action@v2.0.0
+        uses: container-tools/kind-action@v2.0.1
         with:
           config: tests/config/kind.yaml
       - name: Import Docker image
