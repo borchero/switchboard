@@ -37,7 +37,7 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Setup Kubernetes cluster
-        uses: helm/kind-action@v1.5.0
+        uses: helm/kind-action@v1.7.0
         with:
           cluster_name: switchboard-tests
       - name: Setup just
