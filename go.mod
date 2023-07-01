@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/imdario/mergo v0.3.15
 	github.com/jetstack/cert-manager v1.7.2
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	github.com/traefik/traefik/v2 v2.9.10
 	go.uber.org/zap v1.24.0
 	k8s.io/api v0.26.3
