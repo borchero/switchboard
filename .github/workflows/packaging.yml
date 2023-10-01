@@ -41,7 +41,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
       - name: Build multi-platform image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -51,7 +51,7 @@ jobs:
       # Only export and upload the image if used for testing
       - name: Export image for test platform
         if: github.event_name != 'release'
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: false
