@@ -10,7 +10,7 @@ metadata:
   name: {{ .Release.Name }}
 rules:
   # Controller Permissions
-  - apiGroups: ["traefik.containo.us"]
+  - apiGroups: ["traefik.io"]
     resources: ["ingressroutes"]
     verbs: ["get", "list", "watch"]
   # Integrations
