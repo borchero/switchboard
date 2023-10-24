@@ -73,8 +73,7 @@ setup-cluster: create-cluster
   kubectl apply -f https://kind.sigs.k8s.io/examples/loadbalancer/metallb-config.yaml
   kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.6/docs/content/reference/dynamic-configuration/traefik.containo.us_ingressroutes.yaml
   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
-  helm repo add bitnami https://charts.bitnami.com/bitnami
-  helm upgrade --install --set crd.create=true --wait external-dns bitnami/external-dns
+  helm upgrade --install --set crd.create=true --wait external-dns oci://registry-1.docker.io/bitnamicharts/external-dns
   kubectl apply -f dev/manifests/ca-secret.yaml
   kubectl apply -f dev/manifests/tls-issuer.yaml
 
