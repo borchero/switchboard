@@ -17,8 +17,8 @@ func EnqueueMapFunc[L client.ObjectList](
 	target client.Object,
 	list L,
 	getItems func(L) []client.Object,
-) func(client.Object) []reconcile.Request {
-	return func(obj client.Object) []reconcile.Request {
+) func(context.Context, client.Object) []reconcile.Request {
+	return func(ctx context.Context, obj client.Object) []reconcile.Request {
 		// Check whether we need to enqueue any objects
 		if !(target.GetObjectKind() == obj.GetObjectKind() &&
 			target.GetNamespace() == obj.GetNamespace() &&
@@ -27,7 +27,7 @@ func EnqueueMapFunc[L client.ObjectList](
 		}
 
 		// If our filter matches, we want to fetch all items of the specified type...
-		if err := ctrlClient.List(context.TODO(), list); err != nil {
+		if err := ctrlClient.List(ctx, list); err != nil {
 			logger.Error("failed to list resources upon object change", zap.Error(err))
 			return nil
 		}
