@@ -1,7 +1,8 @@
 module github.com/borchero/switchboard
 
-go 1.21
-toolchain go1.22.1
+go 1.22
+
+toolchain go1.22.2
 
 require (
 	dario.cat/mergo v1.0.0
