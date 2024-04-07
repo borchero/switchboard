@@ -20,11 +20,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
       - name: Run lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
 
   unit-test:
     name: Unit Tests
@@ -33,7 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
       - name: Setup Kubernetes cluster
@@ -41,10 +41,10 @@ jobs:
         with:
           cluster_name: switchboard-tests
       - name: Setup just
-        uses: extractions/setup-just@v1
+        uses: extractions/setup-just@v2
       - name: Run unit tests
         run: just unit-test
         env:
           KIND_CLUSTER_NAME: switchboard-tests
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
