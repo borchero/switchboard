@@ -42,15 +42,15 @@ func TestEnqueueMapFunc(t *testing.T) {
 	)
 
 	// Check whether enqueue only happens for service1
-	assert.Greater(t, len(enqueuer(&service1)), 0)
-	assert.Len(t, enqueuer(&service2), 0)
-	assert.Len(t, enqueuer(&service3), 0)
+	assert.Greater(t, len(enqueuer(ctx, &service1)), 0)
+	assert.Len(t, enqueuer(ctx, &service2), 0)
+	assert.Len(t, enqueuer(ctx, &service3), 0)
 
 	// Check whether distinct services are returned for enqueue
 	names := []string{"my-service-1", "my-service-2", "my-service-3"}
 	var found []string
 
-	for _, obj := range enqueuer(&service1) {
+	for _, obj := range enqueuer(ctx, &service1) {
 		if obj.Namespace == namespace {
 			found = append(found, obj.Name)
 		}

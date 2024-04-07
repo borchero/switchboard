@@ -19,6 +19,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/external-dns/endpoint"
 	"sigs.k8s.io/yaml"
 )
@@ -51,8 +52,10 @@ func main() {
 		LeaderElection:          config.LeaderElection.LeaderElect,
 		LeaderElectionID:        config.LeaderElection.ResourceName,
 		LeaderElectionNamespace: config.LeaderElection.ResourceNamespace,
-		MetricsBindAddress:      config.Metrics.BindAddress,
-		HealthProbeBindAddress:  config.Health.HealthProbeBindAddress,
+		Metrics: server.Options{
+			BindAddress: config.Metrics.BindAddress,
+		},
+		HealthProbeBindAddress: config.Health.HealthProbeBindAddress,
 	}
 	initScheme(config, options.Scheme)
 

@@ -13,7 +13,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 func integrationsFromConfig(
@@ -71,7 +70,7 @@ func builderWithIntegrations(
 				},
 			)
 			builder = builder.Watches(
-				&source.Kind{Type: itg.WatchedObject()},
+				itg.WatchedObject(),
 				handler.EnqueueRequestsFromMapFunc(enqueue),
 			)
 		}
