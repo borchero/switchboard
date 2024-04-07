@@ -1,4 +1,4 @@
-# >>> PULL REQUEST LABELS
+# -------------------------------------------- LABELS ------------------------------------------- #
 autolabeler:
   # Conventional Commit Types (https://github.com/commitizen/conventional-commit-types)
   - label: build
@@ -38,20 +38,19 @@ autolabeler:
   - label: breaking
     title:
       - '/^[a-z]+(\(.*\))?\!\:/'
-# >>> AUTOMATIC VERSIONING (PRE 1.0)
+# ------------------------------------------ VERSIONING ----------------------------------------- #
 version-resolver:
   minor:
     labels:
       - breaking
   default: patch
-# >>> RELEASE CONFIGURATION
+# --------------------------------------- RELEASE TEMPLATE -------------------------------------- #
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
 category-template: "### $TITLE"
 change-template: "- $TITLE by @$AUTHOR in [#$NUMBER]($URL)"
 replacers:
-  # remove conventional commit tag & scope from change list
-  - search: '/- [a-z]+(\(.*\))?(\!)?\: /g'
+  - search: '/- [a-z]+(\!)?\: /g'
     replace: "- "
 template: |
   ## What's Changed
@@ -72,19 +71,29 @@ categories:
   - title: 🏎️ Performance Improvements
     labels:
       - performance
+  - title: 📚 Documentation
+    labels:
+      - documentation
   - title: 🏗️ Testing
     labels:
       - test
   - title: ⚙️ Automation
     labels:
       - ci
-  - title: 📝 Documentation
-    labels:
-      - documentation
-  - title: 🪵 Miscellaneous
+  - title: 🛠 Builds
     labels:
       - build
-      - chore
-      - refactor
-      - revert
+  - title: 💎 Code Style
+    labels:
       - style
+  - title: 📦 Refactorings
+    labels:
+      - refactor
+  - title: ♻️ Chores
+    labels:
+      - chore
+  - title: 🗑 Reverts
+    labels:
+      - revert
+exclude-labels:
+  - dependencies

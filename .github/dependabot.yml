@@ -5,7 +5,10 @@ updates:
     package-ecosystem: github-actions
     schedule:
       interval: monthly
-      day: saturday
+    groups:
+      ci-dependencies:
+        patterns:
+          - "*"
     commit-message:
       prefix: ci
     labels:
@@ -15,7 +18,10 @@ updates:
     package-ecosystem: gomod
     schedule:
       interval: monthly
-      day: saturday
+    groups:
+      go-dependencies:
+        patterns:
+          - "*"
     commit-message:
       prefix: build(go)
     labels:
@@ -25,7 +31,10 @@ updates:
     package-ecosystem: docker
     schedule:
       interval: monthly
-      day: saturday
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
     commit-message:
       prefix: build(docker)
     labels:
