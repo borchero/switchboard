@@ -24,7 +24,7 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Run lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
 
   unit-test:
     name: Unit Tests
@@ -37,7 +37,7 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Setup Kubernetes cluster
-        uses: helm/kind-action@v1.9.0
+        uses: helm/kind-action@v1.10.0
         with:
           cluster_name: switchboard-tests
       - name: Setup just
