@@ -16,10 +16,10 @@ keywords:
 
 dependencies:
   - name: external-dns
-    version: 6.15.1
-    repository: https://charts.bitnami.com/bitnami
-    condition: external-dns.install
+    version: 8.7.11
+    repository: oci://registry-1.docker.io/bitnamicharts
+    condition: dependencies.external-dns.install
   - name: cert-manager
-    version: 1.11.0
+    version: 1.17.1
     repository: https://charts.jetstack.io
-    condition: cert-manager.install
+    condition: dependencies.cert-manager.install

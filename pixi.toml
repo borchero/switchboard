@@ -1,0 +1,71 @@
+[project]
+channels = ["conda-forge"]
+name = "switchboard"
+platforms = ["linux-64", "osx-arm64"]
+
+[dependencies]
+bats-core = "*"
+helm-docs = "*"
+kubernetes-client = "*"
+kubernetes-cloud-provider-kind = "*"
+kubernetes-helm = "*"
+kubernetes-kind = "*"
+sed = "*"
+yq = "*"
+
+[feature.lint.dependencies]
+golangci-lint = "*"
+pre-commit = "*"
+pre-commit-hooks = "*"
+
+[environments]
+default = ["lint"]
+
+# ----------------------------------------------------------------------------------------------- #
+#                                              TASKS                                              #
+# ----------------------------------------------------------------------------------------------- #
+
+[tasks]
+docs = { cwd = "chart", cmd = """
+    helm-docs
+    && sed -i -E '/cert-manager\\.installCRDs/d' README.md
+    && sed -i -E '/external-dns\\.crd/d' README.md
+    && sed -i -E '/external-dns\\.sources/d' README.md
+""" }
+lint = "golangci-lint run ./..."
+run-controller = "go run cmd/main.go --config dev/config.yaml"
+
+# ------------------------------------------- CLUSTER ------------------------------------------- #
+
+cluster-create = """
+    docker run -d --restart=always -p "127.0.0.1:5001:5000" --network bridge --name "kind-registry" registry:2
+    && kind create cluster --name switchboard --config tests/config/kind.yaml
+    && kubectl config use-context kind-switchboard
+    && bash tests/scripts/connect-registry.sh
+    && kubectl apply -f tests/config/registry.yaml
+"""
+cluster-lb-controller = "sudo cloud-provider-kind"
+cluster-setup = """
+    kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/traefik.io_ingressroutes.yaml
+    && kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.yaml
+    && helm repo add bitnami https://charts.bitnami.com/bitnami
+    && helm upgrade --install --set crd.create=true --wait external-dns bitnami/external-dns --timeout 10m
+    && kubectl apply -f dev/manifests/ca-secret.yaml
+    && kubectl apply -f dev/manifests/tls-issuer.yaml
+"""
+cluster-teardown = """
+    kind delete cluster --name switchboard
+    && docker container rm -f kind-registry
+"""
+
+# -------------------------------------------- TESTS -------------------------------------------- #
+
+[tasks.test-coverage]
+cmd = "go test ./... -coverprofile cover.out"
+
+[tasks.test-e2e]
+args = ["image_name", "image_tag"]
+cmd = """
+    yq -yi '.image.name = \"{{ image_name }}\" | .image.tag = \"{{ image_tag }}\"' tests/config/switchboard.yaml
+    && bats tests -t
+"""

@@ -1,16 +1,29 @@
-run:
-  timeout: 10m
+version: "2"
 linters:
   enable:
-    - goimports
     - revive
-    - stylecheck
-issues:
-  include:
-    - EXC0002
-    - EXC0014
-linters-settings:
-  revive:
-    rules:
-      - name: unused-receiver
-        severity: warning
+    - staticcheck
+  settings:
+    revive:
+      rules:
+        - name: unused-receiver
+          severity: warning
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

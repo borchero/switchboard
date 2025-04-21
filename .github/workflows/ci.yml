@@ -1,20 +1,16 @@
-name: CI - Application
+name: CI
 on:
   pull_request:
-    paths-ignore:
-      - chart/**
   push:
     branches: [main]
-    paths-ignore:
-      - chart/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint
+  pre-commit-checks:
+    name: Pre-commit Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,8 +19,13 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Run lint
-        uses: golangci/golangci-lint-action@v4
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          environments: default
+          activate-environment: true
+      - name: Run pre-commit
+        run: pre-commit run --all-files
 
   unit-test:
     name: Unit Tests
@@ -36,15 +37,16 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Setup Kubernetes cluster
-        uses: helm/kind-action@v1.9.0
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          cluster_name: switchboard-tests
-      - name: Setup just
-        uses: extractions/setup-just@v2
+          environments: default
+          activate-environment: true
+      - name: Setup Kind
+        run: |
+          pixi run cluster-create
+          pixi run cluster-setup
       - name: Run unit tests
-        run: just unit-test
-        env:
-          KIND_CLUSTER_NAME: switchboard-tests
+        run: pixi run test-coverage
       - name: Upload coverage
         uses: codecov/codecov-action@v4

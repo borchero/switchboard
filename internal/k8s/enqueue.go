@@ -20,9 +20,9 @@ func EnqueueMapFunc[L client.ObjectList](
 ) func(context.Context, client.Object) []reconcile.Request {
 	return func(ctx context.Context, obj client.Object) []reconcile.Request {
 		// Check whether we need to enqueue any objects
-		if !(target.GetObjectKind() == obj.GetObjectKind() &&
-			target.GetNamespace() == obj.GetNamespace() &&
-			target.GetName() == obj.GetName()) {
+		if target.GetObjectKind() != obj.GetObjectKind() ||
+			target.GetNamespace() != obj.GetNamespace() ||
+			target.GetName() != obj.GetName() {
 			return nil
 		}
 

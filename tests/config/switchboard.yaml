@@ -15,3 +15,6 @@ external-dns:
   install: true
 cert-manager:
   install: true
+image:
+  name: localhost:5001/switchboard
+  tag: dev
