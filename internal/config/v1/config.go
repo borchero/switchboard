@@ -1,7 +1,7 @@
 package v1
 
 import (
-	v1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
+	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
 // Config is the Schema for the configs API
