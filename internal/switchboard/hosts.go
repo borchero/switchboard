@@ -3,8 +3,8 @@ package switchboard
 import (
 	"fmt"
 
-	muxer "github.com/traefik/traefik/v2/pkg/muxer/http"
-	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	muxer "github.com/traefik/traefik/v3/pkg/muxer/http"
+	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 )
 
 // HostCollection allows to aggregate the hosts from ingress resources.

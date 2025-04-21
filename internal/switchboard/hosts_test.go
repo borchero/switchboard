@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
-	traefiktypes "github.com/traefik/traefik/v2/pkg/types"
+	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	traefiktypes "github.com/traefik/traefik/v3/pkg/types"
 )
 
 func TestNewHostCollection(t *testing.T) {
