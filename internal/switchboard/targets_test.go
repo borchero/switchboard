@@ -37,7 +37,7 @@ func TestServiceTargetTargets(t *testing.T) {
 	require.Nil(t, err)
 
 	// Check whether we find the load balancer IP
-	time.Sleep(time.Second)
+	time.Sleep(5 * time.Second)
 	name := client.ObjectKeyFromObject(&service)
 	err = ctrlClient.Get(ctx, name, &service)
 	require.Nil(t, err)
