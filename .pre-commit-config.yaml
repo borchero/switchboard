@@ -1,17 +1,41 @@
-ci:
-  autofix_prs: false
-  skip: [golangci-lint]
-  autoupdate_commit_msg: "style: pre-commit autoupdate"
-
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+  - repo: local
     hooks:
-      - id: trailing-whitespace
+      # pre-commit-hooks
+      - id: trailing-whitespace-fixer
+        name: trailing-whitespace-fixer
+        entry: pixi run trailing-whitespace-fixer
+        language: system
+        types: [text]
       - id: end-of-file-fixer
+        name: end-of-file-fixer
+        entry: pixi run end-of-file-fixer
+        language: system
+        types: [text]
       - id: check-added-large-files
-  - repo: https://github.com/golangci/golangci-lint
-    rev: v1.57.2
-    hooks:
+        name: check-added-large-files
+        entry: pixi run check-added-large-files
+        language: system
+        types: [text]
+      # golangci-lint
       - id: golangci-lint
-        args: ["--go", "1.18"]
+        name: golangci-lint
+        entry: pixi run golangci-lint run ./...
+        language: system
+        pass_filenames: false
+        types: [go]
+      # helm-lint
+      - id: helm-lint
+        name: helm-lint
+        entry: pixi run helm lint chart
+        language: system
+        pass_filenames: false
+        types: [text]
+        files: ^chart/Chart.yaml$
+      # helm-docs
+      - id: helm-docs
+        name: helm-docs
+        entry: pixi run docs
+        language: system
+        pass_filenames: false
+        types: [text]

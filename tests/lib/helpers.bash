@@ -1,9 +1,4 @@
 function install() {
-    # Install Traefik ingress route CRD
-    kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/traefik.io_ingressroutes.yaml
-    # Install chart
-    helm repo add bitnami https://charts.bitnami.com/bitnami
-    helm repo add jetstack https://charts.jetstack.io
     helm dependency build ${BATS_TEST_DIRNAME}/../chart
     helm install \
         --values ${BATS_TEST_DIRNAME}/config/switchboard.yaml \

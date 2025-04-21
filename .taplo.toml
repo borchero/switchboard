@@ -1,0 +1,4 @@
+[formatting]
+array_auto_collapse = true
+compact_arrays = true
+reorder_arrays = true

@@ -47,16 +47,12 @@ The following lists all values that may be set when installing this chart (see
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| cert-manager.install | bool | `false` | Whether the cert-manager chart should be installed.    See: https://artifacthub.io/packages/helm/cert-manager/cert-manager |
-| cert-manager.installCRDs | bool | `true` |  |
+| cert-manager.crds.enabled | bool | `true` |  |
 | certificateIssuer.create | bool | `false` | Whether an ACME certificate issuer should be created for use with cert-manager. |
 | certificateIssuer.email | string | `nil` |  |
 | certificateIssuer.solvers | list | `[]` | The solvers to use for verifying that the domain is owned in the ACME challenge.    See: https://cert-manager.io/docs/configuration/acme/ |
-| external-dns.crd.create | bool | `true` |  |
-| external-dns.install | bool | `false` | Whether the external-dns chart should be installed. If installed manually, make sure to add    the `crd` item to the sources.    See: https://artifacthub.io/packages/helm/external-dns/external-dns |
-| external-dns.sources[0] | string | `"crd"` |  |
-| external-dns.sources[1] | string | `"service"` |  |
-| external-dns.sources[2] | string | `"ingress"` |  |
+| dependencies.cert-manager.install | bool | `false` |  |
+| dependencies.external-dns.install | bool | `false` |  |
 | image.name | string | `"ghcr.io/borchero/switchboard"` | The switchboard image to use. |
 | image.tag | string | `nil` | The switchboard image tag to use. If not provided, assumes the same version as the chart. |
 | integrations.certManager.certificateTemplate | object | `{}` | The certificate template to use when creating certificates via the cert-manager    integration. Unless `certificateIssuer.create` is set to `true` when installing this    chart, setting `.spec.IssuerRef` is required. |

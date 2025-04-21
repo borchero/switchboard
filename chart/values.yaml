@@ -92,13 +92,13 @@ certificateIssuer:
 # EXTERNAL DEPENDENCIES
 #--------------------------------------------------------------------------------------------------
 
-external-dns:
-  # -- Whether the external-dns chart should be installed. If installed manually, make sure to add
-  #    the `crd` item to the sources.
-  #    See: https://artifacthub.io/packages/helm/external-dns/external-dns
-  install: false
+dependencies:
+  external-dns:
+    install: false
+  cert-manager:
+    install: false
 
-  ### OVERWRITES ###
+external-dns:
   crd:
     create: true
   sources:
@@ -109,9 +109,5 @@ external-dns:
 #--------------------------------------------------------------------------------------------------
 
 cert-manager:
-  # -- Whether the cert-manager chart should be installed.
-  #    See: https://artifacthub.io/packages/helm/cert-manager/cert-manager
-  install: false
-
-  ### OVERWRITES ###
-  installCRDs: true
+  crds:
+    enabled: true

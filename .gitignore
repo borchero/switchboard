@@ -1,6 +1,9 @@
 # Chart lockfile
 Chart.lock
 
+# pixi
+.pixi
+
 # Created by https://www.toptal.com/developers/gitignore/api/macos,go,helm,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,go,helm,visualstudiocode
 
@@ -94,3 +97,7 @@ Temporary Items
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,go,helm,visualstudiocode
+
+# pixi environments
+.pixi
+*.egg-info
