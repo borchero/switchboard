@@ -42,10 +42,12 @@ jobs:
         with:
           environments: default
           activate-environment: true
-      - name: Setup Kind
+      - name: Setup Kind cluster
         run: |
           pixi run cluster-create
           pixi run cluster-setup
+      - name: Run load balancer controller
+        run: pixi run cluster-lb-controller &
       - name: Run unit tests
         run: pixi run test-coverage
       - name: Upload coverage

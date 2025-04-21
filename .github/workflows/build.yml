@@ -1,4 +1,4 @@
-name: Packaging
+name: Build
 on:
   release:
     types: [published]
@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  container-image:
-    name: Container Image
+  build-image:
+    name: Build Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -64,8 +64,7 @@ jobs:
           path: /tmp/image.tar
 
   helm-chart:
-    name: Helm Chart
-    if: github.event_name == 'release'
+    name: Build Helm Chart
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -90,6 +89,7 @@ jobs:
             --version ${VERSION#v}
         working-directory: ./chart
       - name: Push Chart
+        if: github.event_name == 'release'
         run: |
           VERSION=${{ github.ref_name }}
           helm push switchboard-${VERSION#v}.tgz oci://ghcr.io/${{ github.actor }}/charts
@@ -98,7 +98,7 @@ jobs:
   e2e-tests:
     name: End-to-end Tests
     if: github.event_name != 'release'
-    needs: container-image
+    needs: build-image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
