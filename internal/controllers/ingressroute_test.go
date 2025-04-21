@@ -11,8 +11,8 @@ import (
 	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
-	traefiktypes "github.com/traefik/traefik/v2/pkg/types"
+	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	traefiktypes "github.com/traefik/traefik/v3/pkg/types"
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -154,6 +154,28 @@ func TestIngressMultipleRules(t *testing.T) {
 			},
 		},
 		DNSNames: []string{"example.com", "www.example.com", "v2.example.com"},
+	})
+}
+
+func TestIngressHeader(t *testing.T) {
+	runTest(t, testCase{
+		Ingress: traefik.IngressRoute{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "my-ingress",
+			},
+			Spec: traefik.IngressRouteSpec{
+				Routes: []traefik.Route{{
+					Kind:  "Rule",
+					Match: "Host(`argo.host.name`) && Header(`Content-Type`, `application/grpc`)",
+					Services: []traefik.Service{{
+						LoadBalancerSpec: traefik.LoadBalancerSpec{
+							Name: "nginx",
+						},
+					}},
+				}},
+			},
+		},
+		DNSNames: []string{"argo.host.name"},
 	})
 }
 

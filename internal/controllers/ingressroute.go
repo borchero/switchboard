@@ -8,7 +8,7 @@ import (
 	"github.com/borchero/switchboard/internal/ext"
 	"github.com/borchero/switchboard/internal/integrations"
 	"github.com/borchero/switchboard/internal/switchboard"
-	traefik "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	"go.uber.org/zap"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"

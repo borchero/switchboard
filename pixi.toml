@@ -46,7 +46,7 @@ cluster-create = """
 """
 cluster-lb-controller = "sudo cloud-provider-kind"
 cluster-setup = """
-    kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/traefik.io_ingressroutes.yaml
+    kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.3/docs/content/reference/dynamic-configuration/traefik.io_ingressroutes.yaml
     && kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.yaml
     && helm repo add bitnami https://charts.bitnami.com/bitnami
     && helm upgrade --install --set crd.create=true --wait external-dns bitnami/external-dns --timeout 10m
