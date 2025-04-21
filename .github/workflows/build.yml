@@ -74,20 +74,21 @@ jobs:
         with:
           environments: default
           activate-environment: true
-      - name: Login to GitHub OCI Registry
-        run: |
-          echo ${{ github.token }} | \
-            helm registry login ghcr.io --username ${{ github.actor }} --password-stdin
       - name: Download Dependencies
         run: helm dependency build
         working-directory: ./chart
       - name: Package Chart
         run: |
-          VERSION=${{ github.ref_name }}
+          VERSION=${{ github.event_name == 'release' && github.ref_name || 'v1.0.0' }}
           helm package . \
             --app-version ${VERSION#v} \
             --version ${VERSION#v}
         working-directory: ./chart
+      - name: Login to GitHub OCI Registry
+        if: github.event_name == 'release'
+        run: |
+          echo ${{ github.token }} | \
+            helm registry login ghcr.io --username ${{ github.actor }} --password-stdin
       - name: Push Chart
         if: github.event_name == 'release'
         run: |
@@ -120,7 +121,7 @@ jobs:
           pixi run cluster-create
           pixi run cluster-setup
       - name: Run load balancer controller
-        run: pixi run cluster-lb-controller &
+        run: cloud-provider-kind &
       - name: Import Docker image
         run: |
           IMAGE_ID=$(docker load -i /tmp/image.tar | rev | cut -d' ' -f1 | rev)
