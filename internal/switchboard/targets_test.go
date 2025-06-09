@@ -92,6 +92,31 @@ func TestServiceTargetTargetsFromService(t *testing.T) {
 	}}
 	targets = target.targetsFromService(service)
 	assert.ElementsMatch(t, []string{"example.lb.identifier.amazonaws.com"}, targets)
+
+	// Source hostname from annotation
+	service.SetAnnotations(map[string]string{
+		HostnameKey: "example.identifier.amazonaws.com",
+	})
+	targets = target.targetsFromService(service)
+	assert.ElementsMatch(t, []string{"example.identifier.amazonaws.com"}, targets)
+
+	// Ensure annotation takes precedence
+	service.SetAnnotations(map[string]string{
+		HostnameKey: "example.identifier.amazonaws.com",
+	})
+	service.Status.LoadBalancer.Ingress = []v1.LoadBalancerIngress{{
+		IP:       "192.168.5.5",
+		Hostname: "example.lb.identifier.amazonaws.com",
+	}}
+	targets = target.targetsFromService(service)
+	assert.ElementsMatch(t, []string{"example.identifier.amazonaws.com"}, targets)
+
+	// Ensure only one hostname
+	service.SetAnnotations(map[string]string{
+		HostnameKey: "example.identifier.amazonaws.com, example2.identifier.amazonaws.com",
+	})
+	targets = target.targetsFromService(service)
+	assert.ElementsMatch(t, []string{"example.identifier.amazonaws.com"}, targets)
 }
 
 func TestServiceTargetNamespacedName(t *testing.T) {
