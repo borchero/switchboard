@@ -3,11 +3,14 @@ package switchboard
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+const HostnameKey = "external-dns.alpha.kubernetes.io/hostname"
 
 // Target is a type which allows to retrieve a potentially dynamically changing IP from Kubernetes.
 type Target interface {
@@ -17,6 +20,28 @@ type Target interface {
 	// NamespacedName returns the namespaced name of the dynamic target service or none if the IP
 	// is not retrieved dynamically.
 	NamespacedName() *types.NamespacedName
+}
+
+//-------------------------------------------------------------------------------------------------
+// ANNOTATION HOSTNAME
+//-------------------------------------------------------------------------------------------------
+
+// SplitHostnameAnnotation splits a comma-separated hostname annotation string into a slice of hostnames.
+// It trims any leading or trailing whitespace and removes any spaces within the anno
+func SplitHostnameAnnotation(input string) []string {
+	return strings.Split(strings.TrimSpace(strings.ReplaceAll(input, " ", "")), ",")
+}
+
+func HostnamesFromAnnotations(input map[string]string) []string {
+	return extractHostnamesFromAnnotations(input, HostnameKey)
+}
+
+func extractHostnamesFromAnnotations(input map[string]string, key string) []string {
+	annotation, ok := input[key]
+	if !ok {
+		return nil
+	}
+	return SplitHostnameAnnotation(annotation)
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -45,16 +70,27 @@ func (t serviceTarget) Targets(ctx context.Context, client client.Client) ([]str
 }
 
 func (serviceTarget) targetsFromService(service v1.Service) []string {
-	// Try to get load balancer IPs/hostnames...
 	targets := make([]string, 0)
-	for _, ingress := range service.Status.LoadBalancer.Ingress {
-		if ingress.Hostname != "" {
-			// We cannot have more than one CNAME record, the hostname overwrites everything
-			targets = []string{ingress.Hostname}
-			break
-		}
-		if ingress.IP != "" {
-			targets = append(targets, ingress.IP)
+
+	// Prioritize annotation hostnames.
+	hostnameList := HostnamesFromAnnotations(service.Annotations)
+	for _, hostname := range hostnameList {
+		// We cannot have more than one CNAME record, the annotation overwrites everything
+		targets = []string{hostname}
+		break
+	}
+
+	// Try to get load balancer IPs/hostnames...
+	if len(targets) == 0 {
+		for _, ingress := range service.Status.LoadBalancer.Ingress {
+			if ingress.Hostname != "" {
+				// We cannot have more than one CNAME record, the hostname overwrites everything
+				targets = []string{ingress.Hostname}
+				break
+			}
+			if ingress.IP != "" {
+				targets = append(targets, ingress.IP)
+			}
 		}
 	}
 
