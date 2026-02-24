@@ -1,7 +1,0 @@
-apiVersion: kind.x-k8s.io/v1alpha4
-kind: Cluster
-containerdConfigPatches:
-  # Allow to connect to a local registry
-  - |-
-    [plugins."io.containerd.grpc.v1.cri".registry]
-      config_path = "/etc/containerd/certs.d"

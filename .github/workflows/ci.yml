@@ -42,12 +42,12 @@ jobs:
         with:
           environments: default
           activate-environment: true
-      - name: Setup Kind cluster
+      - name: Setup minikube cluster
         run: |
           pixi run cluster-create
           pixi run cluster-setup
-      - name: Run load balancer controller
-        run: cloud-provider-kind &
+      - name: Tunnel through load balancer
+        run: pixi run cluster-tunnel-lb &
       - name: Run unit tests
         run: pixi run test-coverage
       - name: Upload coverage

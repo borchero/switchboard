@@ -3,6 +3,8 @@ environments:
   default:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -19,10 +21,11 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/helm-docs-1.14.2-ha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/identify-2.6.10-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/jq-1.7.1-hd590300_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-1.32.3-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-client-1.32.3-h6d84b8b_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-cloud-provider-kind-0.6.0-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-helm-3.17.3-h519d9b9_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-kind-0.27.0-ha770c72_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-node-1.32.3-h6d84b8b_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-server-1.32.3-h6d84b8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ld_impl_linux-64-2.43-h712a8e2_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.7.0-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libffi-3.4.6-h2dba641_1.conda
@@ -35,6 +38,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libstdcxx-14.2.0-h8f9b012_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libuuid-2.38.1-h0b41bf4_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/minikube-1.38.1-h280c20c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.5-h2d0b736_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/nodeenv-1.9.1-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/oniguruma-6.9.10-hb9d3cd8_0.conda
@@ -76,10 +80,11 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/helm-docs-1.14.2-hf450f58_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/identify-2.6.10-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/jq-1.7.1-h93a5062_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-1.32.3-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-client-1.32.3-hb853c21_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-cloud-provider-kind-0.6.0-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-helm-3.17.3-h30cdf38_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-kind-0.27.0-hce30654_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-node-1.32.3-hb853c21_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-server-1.32.3-hb853c21_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libasprintf-0.23.1-h493aca8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libasprintf-devel-0.23.1-h493aca8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libcxx-20.1.3-ha82da77_0.conda
@@ -94,6 +99,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libmpdec-4.0.0-h99b78c6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libsqlite-3.49.1-h3f77e49_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libzlib-1.3.1-h8359307_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/minikube-1.38.1-h1a92334_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ncurses-6.5-h5e97a16_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/nodeenv-1.9.1-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/oniguruma-6.9.10-h5505292_0.conda
@@ -120,89 +126,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/xmltodict-0.14.2-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h3422bc3_2.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/yq-3.4.3-pyhd8ed1ab_1.conda
-  lint:
-    channels:
-    - url: https://conda.anaconda.org/conda-forge/
-    packages:
-      linux-64:
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-h4bc722e_7.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ca-certificates-2025.1.31-hbcca054_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-1.17.1-py313hfab6e84_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/cfgv-3.3.1-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/distlib-0.3.9-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/filelock-3.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.1.2-ha770c72_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/identify-2.6.10-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ld_impl_linux-64-2.43-h712a8e2_4.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.7.0-h5888daf_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libffi-3.4.6-h2dba641_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgcc-14.2.0-h767d61c_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgcc-ng-14.2.0-h69a702a_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgomp-14.2.0-h767d61c_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/liblzma-5.8.1-hb9d3cd8_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libmpdec-4.0.0-h4bc722e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libsqlite-3.49.1-hee588c1_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libstdcxx-14.2.0-h8f9b012_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libuuid-2.38.1-h0b41bf4_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.5-h2d0b736_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/nodeenv-1.9.1-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/openssl-3.5.0-h7b32b05_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/platformdirs-4.3.7-pyh29332c3_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/pre-commit-4.2.0-pyha770c72_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/pre-commit-hooks-5.0.0-pyhd8ed1ab_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/pycparser-2.22-pyh29332c3_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/python-3.13.3-hf636f53_101_cp313.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/python_abi-3.13-6_cp313.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.2-py313h8060acc_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/readline-8.2-h8c095d6_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ruamel.yaml-0.18.10-py313h536fd9c_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ruamel.yaml.clib-0.2.8-py313h536fd9c_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-78.1.1-pyhff2d567_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_h4845f30_101.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-2.2.1-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ukkonen-1.0.1-py313h33d0bda_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.30.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/yaml-0.2.5-h7f98852_2.tar.bz2
-      osx-arm64:
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ca-certificates-2025.1.31-hf0a4a13_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/cffi-1.17.1-py313hc845a76_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/cfgv-3.3.1-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/distlib-0.3.9-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/filelock-3.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.1.2-hf450f58_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/identify-2.6.10-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libcxx-20.1.3-ha82da77_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libexpat-2.7.0-h286801f_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libffi-3.4.6-h1da3d7d_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/liblzma-5.8.1-h39f12f2_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libmpdec-4.0.0-h99b78c6_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libsqlite-3.49.1-h3f77e49_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libzlib-1.3.1-h8359307_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ncurses-6.5-h5e97a16_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/nodeenv-1.9.1-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.5.0-h81ee809_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/platformdirs-4.3.7-pyh29332c3_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/pre-commit-4.2.0-pyha770c72_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/pre-commit-hooks-5.0.0-pyhd8ed1ab_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/pycparser-2.22-pyh29332c3_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/python-3.13.3-h81fe080_101_cp313.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/python_abi-3.13-6_cp313.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pyyaml-6.0.2-py313ha9b7d5b_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/readline-8.2-h1d1bf99_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ruamel.yaml-0.18.10-py313h90d716c_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ruamel.yaml.clib-0.2.8-py313h63a2874_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-78.1.1-pyhff2d567_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/tk-8.6.13-h5083fa2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-2.2.1-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ukkonen-1.0.1-py313hf9c7212_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.30.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h3422bc3_2.tar.bz2
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
   sha256: fe51de6107f9edc7aa4f786a70f4a883943bc9d39b3bb7307c04c41410990726
@@ -418,6 +341,28 @@ packages:
   license_family: MIT
   size: 317604
   timestamp: 1702501287237
+- conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-1.32.3-ha770c72_0.conda
+  sha256: b446816914b2c9051515c0f31827296161c4a815ae942504dbd4ad745712cbf8
+  md5: 395a51333b80352320822131714845d2
+  depends:
+  - kubernetes-client 1.32.3 h6d84b8b_0
+  - kubernetes-node 1.32.3 h6d84b8b_0
+  - kubernetes-server 1.32.3 h6d84b8b_0
+  license: Apache-2.0
+  license_family: Apache
+  size: 10979
+  timestamp: 1741759823885
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-1.32.3-hce30654_0.conda
+  sha256: 0e924f74775d45743771a57863c73b8ae9b57d5919924983bdb310bb51209a87
+  md5: 785af26ba167de5cb44ff9700a36c775
+  depends:
+  - kubernetes-client 1.32.3 hb853c21_0
+  - kubernetes-node 1.32.3 hb853c21_0
+  - kubernetes-server 1.32.3 hb853c21_0
+  license: Apache-2.0
+  license_family: Apache
+  size: 11232
+  timestamp: 1741759675697
 - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-client-1.32.3-h6d84b8b_0.conda
   sha256: 387729132844fb0c71fce73adeb1502a05d52b1ec94299d3794b7d842e96cc0c
   md5: d18a296104f9aa5c335c3627e09809fa
@@ -438,20 +383,6 @@ packages:
   license_family: APACHE
   size: 24160836
   timestamp: 1741759068274
-- conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-cloud-provider-kind-0.6.0-ha770c72_0.conda
-  sha256: 1a7f6f27832e6142dd9114d8b2246a8f6b3b49ea1c9c97dd36e170e4125919fd
-  md5: 5314d8c5a353a6a6a8fc08adbdfe4eef
-  license: Apache-2.0
-  license_family: APACHE
-  size: 25124249
-  timestamp: 1740092241072
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-cloud-provider-kind-0.6.0-hce30654_0.conda
-  sha256: 644f3348448c1cabfbb9dffd2611d6520fc1836e1550ef1439c59400c0b2c752
-  md5: 7e0bc85a4f814539ea172336cd478373
-  license: Apache-2.0
-  license_family: APACHE
-  size: 24319315
-  timestamp: 1740092285618
 - conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-helm-3.17.3-h519d9b9_0.conda
   sha256: 5578eb8cdeed638c2ecfe255c458caeca5a8a69fcc30c70513fc7fd9935ebec4
   md5: 373d41e86f22bc003617897b3c5b8628
@@ -466,20 +397,48 @@ packages:
   license_family: Apache
   size: 12274938
   timestamp: 1744233296747
-- conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-kind-0.27.0-ha770c72_0.conda
-  sha256: 00feba948c2cab3894b0c9b76e68ddbe1cd77b5a51d174c1b1613c0f787f6e90
-  md5: f71a0f3ccae8a0c3516d171c2dc37a9e
+- conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-node-1.32.3-h6d84b8b_0.conda
+  sha256: 063ee1d817ee574d52bc037651c96b7dcb7c832fc228fb705bc52a88fec86786
+  md5: b855f23b06dca474a8d471a8a6bdbbe3
+  depends:
+  - __glibc >=2.17
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=13
   license: Apache-2.0
   license_family: APACHE
-  size: 3409494
-  timestamp: 1739600888510
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-kind-0.27.0-hce30654_0.conda
-  sha256: 2264e3189478aa1c148a982378a10388e6b60c2be20d1750bf07d76d77539f61
-  md5: 3e6e62b0b7542f9b272d8cb5262a9056
+  size: 44484470
+  timestamp: 1741759242076
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-node-1.32.3-hb853c21_0.conda
+  sha256: f494047b093b9eb0371d928722e00513d43388a8e8b6e5345bf57366a6ba770f
+  md5: 3bb106fd028d8f44b51e10cd4632fe12
+  depends:
+  - __osx >=11.3
   license: Apache-2.0
   license_family: APACHE
-  size: 3202410
-  timestamp: 1739601093847
+  size: 43601701
+  timestamp: 1741759314088
+- conda: https://conda.anaconda.org/conda-forge/linux-64/kubernetes-server-1.32.3-h6d84b8b_0.conda
+  sha256: 2eef4c59ad4505b7b42c3e5aff72bb62fffa1d1c58f8ed8c90a339ff5f58cf6d
+  md5: b33045cbab592b7e53b08b8532bc312e
+  depends:
+  - __glibc >=2.17
+  - __glibc >=2.17,<3.0.a0
+  - kubernetes-node 1.32.3 h6d84b8b_0
+  - libgcc >=13
+  license: Apache-2.0
+  license_family: APACHE
+  size: 65924878
+  timestamp: 1741759602416
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/kubernetes-server-1.32.3-hb853c21_0.conda
+  sha256: f85465d4cdd293639d98ab55805e1bb956f4d083a4f905081e731836fd243b4f
+  md5: 8384f799ef69abe3feb94f12b66557f6
+  depends:
+  - __osx >=11.3
+  - kubernetes-node 1.32.3 hb853c21_0
+  license: Apache-2.0
+  license_family: APACHE
+  size: 67038628
+  timestamp: 1741759518123
 - conda: https://conda.anaconda.org/conda-forge/linux-64/ld_impl_linux-64-2.43-h712a8e2_4.conda
   sha256: db73f38155d901a610b2320525b9dd3b31e4949215c870685fd92ea61b5ce472
   md5: 01f8d123c96816249efd255a31ad7712
@@ -738,6 +697,27 @@ packages:
   license_family: Other
   size: 46438
   timestamp: 1727963202283
+- conda: https://conda.anaconda.org/conda-forge/linux-64/minikube-1.38.1-h280c20c_0.conda
+  sha256: 05975dd3286ec5907ceaaf30e1879e5467f61ec97289cc08774bfadc7c777520
+  md5: e62a67ac889ffdcdf978c1fe534ce75d
+  depends:
+  - kubernetes
+  - __glibc >=2.17
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
+  license: Apache-2.0
+  license_family: APACHE
+  size: 44548950
+  timestamp: 1771573329374
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/minikube-1.38.1-h1a92334_0.conda
+  sha256: cdc74bf1a9e961c87f069d7f83a3be2bf781e137038e4e0c721436609957e7b4
+  md5: d56e4a13e349dcd6765049bab0a3e082
+  depends:
+  - kubernetes
+  license: Apache-2.0
+  license_family: APACHE
+  size: 46724522
+  timestamp: 1771573343607
 - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.5-h2d0b736_3.conda
   sha256: 3fde293232fa3fca98635e1167de6b7c7fda83caf24b9d6c91ec9eefb4f4d586
   md5: 47e340acb35de30501a76c7c799c41d7
