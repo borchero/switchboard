@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v3
       - name: Assemble metadata
@@ -58,7 +58,7 @@ jobs:
           outputs: type=docker,dest=/tmp/image.tar
           tags: switchboard:dev
       - name: Upload image for testing
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: github.event_name != 'release'
         with:
           name: docker-image
@@ -69,9 +69,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.9.0
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           environments: default
           activate-environment: true
@@ -104,16 +104,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v3
       - name: Download image for testing
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: docker-image
           path: /tmp
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.9.0
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           environments: default
           activate-environment: true
