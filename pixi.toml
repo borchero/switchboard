@@ -41,8 +41,8 @@ cluster-lb-controller = "minikube tunnel --profile switchboard"
 cluster-setup = """
     kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.3/docs/content/reference/dynamic-configuration/traefik.io_ingressroutes.yaml
     && kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.yaml
-    && helm repo add bitnami https://charts.bitnami.com/bitnami
-    && helm upgrade --install --set crd.create=true --wait external-dns bitnami/external-dns --timeout 10m
+    && kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.20.0/config/crd/standard/dnsendpoints.externaldns.k8s.io.yaml
+    && kubectl wait -n cert-manager --for=condition=Available deployment --all --timeout=120s
     && kubectl apply -f dev/manifests/ca-secret.yaml
     && kubectl apply -f dev/manifests/tls-issuer.yaml
 """
