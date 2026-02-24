@@ -116,16 +116,16 @@ jobs:
         with:
           environments: default
           activate-environment: true
-      - name: Setup Kind cluster
+      - name: Setup minikube cluster
         run: |
           pixi run cluster-create
           pixi run cluster-setup
       - name: Run load balancer controller
-        run: cloud-provider-kind &
+        run: minikube tunnel --profile switchboard &
       - name: Import Docker image
         run: |
           IMAGE_ID=$(docker load -i /tmp/image.tar | rev | cut -d' ' -f1 | rev)
-          docker tag $IMAGE_ID localhost:5001/switchboard:dev
-          docker push localhost:5001/switchboard:dev
+          docker tag $IMAGE_ID switchboard:dev
+          minikube image load switchboard:dev --profile switchboard
       - name: Run tests
-        run: pixi run test-e2e "localhost:5001/switchboard" "dev"
+        run: pixi run test-e2e "switchboard" "dev"
