@@ -46,6 +46,8 @@ jobs:
         run: |
           pixi run cluster-create
           pixi run cluster-setup
+      - name: Tunnel through load balancer
+        run: pixi run cluster-tunnel-lb &
       - name: Run unit tests
         run: pixi run test-coverage
       - name: Upload coverage

@@ -46,6 +46,7 @@ cluster-setup = """
     && kubectl apply -f dev/manifests/tls-issuer.yaml
 """
 cluster-teardown = "minikube delete --profile switchboard"
+cluster-tunnel-lb = "minikube tunnel --profile switchboard"
 
 # -------------------------------------------- TESTS -------------------------------------------- #
 

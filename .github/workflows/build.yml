@@ -121,6 +121,8 @@ jobs:
         run: |
           pixi run cluster-create
           pixi run cluster-setup
+      - name: Tunnel through load balancer
+        run: pixi run cluster-tunnel-lb &
       - name: Import Docker image
         run: minikube image load /tmp/image.tar --profile switchboard
       - name: Run tests
