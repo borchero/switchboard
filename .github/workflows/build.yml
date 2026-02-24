@@ -56,6 +56,7 @@ jobs:
           context: .
           push: false
           outputs: type=docker,dest=/tmp/image.tar
+          tags: switchboard:dev
       - name: Upload image for testing
         uses: actions/upload-artifact@v4
         if: github.event_name != 'release'
@@ -120,12 +121,7 @@ jobs:
         run: |
           pixi run cluster-create
           pixi run cluster-setup
-      - name: Run load balancer controller
-        run: minikube tunnel --profile switchboard &
       - name: Import Docker image
-        run: |
-          IMAGE_ID=$(docker load -i /tmp/image.tar | rev | cut -d' ' -f1 | rev)
-          docker tag $IMAGE_ID switchboard:dev
-          minikube image load switchboard:dev --profile switchboard
+        run: minikube image load /tmp/image.tar --profile switchboard
       - name: Run tests
         run: pixi run test-e2e "switchboard" "dev"
