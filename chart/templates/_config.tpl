@@ -48,6 +48,9 @@ integrations:
     {{ else }}
       {{ fail "exactly one of target service and target IPs must be set for external dns" }}
     {{ end }}
+    {{ if $externalDNS.ttl }}
+    ttl: {{ $externalDNS.ttl }}
+    {{ end }}
   {{ end }}
 {{ end }}
 
