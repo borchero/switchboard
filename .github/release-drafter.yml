@@ -95,5 +95,3 @@ categories:
   - title: 🗑 Reverts
     labels:
       - revert
-exclude-labels:
-  - dependencies
