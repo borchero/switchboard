@@ -60,6 +60,9 @@ integrations:
       name: ~
       # -- The namespace of the (Traefik) service whose IP address should be used for DNS records.
       namespace: ~
+    # -- The TTL (Time To Live) for DNS records in seconds. If not specified, defaults to 300.
+    #    Some DNS providers require a minimum TTL (e.g., deSEC requires 3600).
+    ttl: ~
 
 metrics:
   # -- Whether the metrics endpoint should be enabled.

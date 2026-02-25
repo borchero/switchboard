@@ -64,4 +64,15 @@ func TestIntegrationsFromConfig(t *testing.T) {
 	}
 	_, err = integrationsFromConfig(config, client)
 	require.NotNil(t, err)
+
+	// Test with custom TTL configuration
+	customTTL := int64(3600)
+	config.Integrations.ExternalDNS = &configv1.ExternalDNSIntegrationConfig{
+		TargetService: &configv1.ServiceRef{Name: "my-service", Namespace: "my-namespace"},
+		TTL:           &customTTL,
+	}
+	integrations, err = integrationsFromConfig(config, client)
+	require.Nil(t, err)
+	assert.Len(t, integrations, 2)
+	assert.Equal(t, "external-dns", integrations[0].Name())
 }

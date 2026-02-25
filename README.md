@@ -122,7 +122,7 @@ metadata:
 spec:
   endpoints:
     - dnsName: www.example.com
-      recordTTL: 300
+      recordTTL: 300  # Default TTL, can be customized in Switchboard configuration
       recordType: A
       targets:
         # The target is the public (or, if unavailable, private) IP address of your Traefik

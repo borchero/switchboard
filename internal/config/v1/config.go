@@ -55,6 +55,7 @@ type IntegrationConfigs struct {
 type ExternalDNSIntegrationConfig struct {
 	TargetService *ServiceRef `json:"targetService,omitempty"`
 	TargetIPs     []string    `json:"targetIPs,omitempty"`
+	TTL           *int64      `json:"ttl,omitempty"`
 }
 
 // CertManagerIntegrationConfig describes the configuration for the cert-manager integration.
