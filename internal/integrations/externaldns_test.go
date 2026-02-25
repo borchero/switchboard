@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	externaldnsv1alpha1 "sigs.k8s.io/external-dns/apis/v1alpha1"
 	"sigs.k8s.io/external-dns/endpoint"
 )
 
@@ -127,7 +128,7 @@ func TestExternalDNSRecordType(t *testing.T) {
 func getDNSEndpoints(
 	ctx context.Context, t *testing.T, ctrlClient client.Client, namespace string,
 ) map[string][]string {
-	var list endpoint.DNSEndpointList
+	var list externaldnsv1alpha1.DNSEndpointList
 	err := ctrlClient.List(ctx, &list, &client.ListOptions{
 		Namespace: namespace,
 	})

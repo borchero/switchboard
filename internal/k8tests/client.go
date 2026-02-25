@@ -8,14 +8,12 @@ import (
 	certmanager "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/stretchr/testify/require"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/external-dns/endpoint"
+	externaldnsv1alpha1 "sigs.k8s.io/external-dns/apis/v1alpha1"
 )
 
 // NewScheme returns a newly configured scheme which registers all types that are relevant for
@@ -29,12 +27,7 @@ func NewScheme() *runtime.Scheme {
 	// >>> traefik
 	utilruntime.Must(traefik.AddToScheme(scheme))
 	// >>> external-dns
-	groupVersion := schema.GroupVersion{Group: "externaldns.k8s.io", Version: "v1alpha1"}
-	scheme.AddKnownTypes(groupVersion,
-		&endpoint.DNSEndpoint{},
-		&endpoint.DNSEndpointList{},
-	)
-	metav1.AddToGroupVersion(scheme, groupVersion)
+	utilruntime.Must(externaldnsv1alpha1.AddToScheme(scheme))
 	return scheme
 }
 

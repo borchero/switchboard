@@ -11,16 +11,14 @@ import (
 	certmanager "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	"go.uber.org/zap"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
-	"sigs.k8s.io/external-dns/endpoint"
+	externaldnsv1alpha1 "sigs.k8s.io/external-dns/apis/v1alpha1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -99,11 +97,6 @@ func initScheme(config configv1.Config, scheme *runtime.Scheme) {
 	}
 
 	if config.Integrations.ExternalDNS != nil {
-		groupVersion := schema.GroupVersion{Group: "externaldns.k8s.io", Version: "v1alpha1"}
-		scheme.AddKnownTypes(groupVersion,
-			&endpoint.DNSEndpoint{},
-			&endpoint.DNSEndpointList{},
-		)
-		metav1.AddToGroupVersion(scheme, groupVersion)
+		utilruntime.Must(externaldnsv1alpha1.AddToScheme(scheme))
 	}
 }

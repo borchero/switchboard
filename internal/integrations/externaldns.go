@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	externaldnsv1alpha1 "sigs.k8s.io/external-dns/apis/v1alpha1"
 	"sigs.k8s.io/external-dns/endpoint"
 )
 
@@ -31,7 +32,7 @@ func (*externalDNS) Name() string {
 }
 
 func (*externalDNS) OwnedResource() client.Object {
-	return &endpoint.DNSEndpoint{}
+	return &externaldnsv1alpha1.DNSEndpoint{}
 }
 
 func (e *externalDNS) WatchedObject() client.Object {
@@ -53,7 +54,7 @@ func (e *externalDNS) UpdateResource(
 	// If the ingress specifies no hosts, there should be no endpoint. We try deleting it and
 	// ignore any error if it was not found.
 	if len(info.Hosts) == 0 {
-		dnsEndpoint := endpoint.DNSEndpoint{ObjectMeta: e.objectMeta(owner)}
+		dnsEndpoint := externaldnsv1alpha1.DNSEndpoint{ObjectMeta: e.objectMeta(owner)}
 		if err := k8s.DeleteIfFound(ctx, e.client, &dnsEndpoint); err != nil {
 			return fmt.Errorf("failed to delete DNS endpoint: %w", err)
 		}
@@ -67,7 +68,7 @@ func (e *externalDNS) UpdateResource(
 	}
 
 	// Create the endpoint resource
-	resource := endpoint.DNSEndpoint{ObjectMeta: e.objectMeta(owner)}
+	resource := externaldnsv1alpha1.DNSEndpoint{ObjectMeta: e.objectMeta(owner)}
 	if _, err := controllerutil.CreateOrPatch(ctx, e.client, &resource, func() error {
 		// Meta
 		if err := reconcileMetadata(owner, &resource, e.client.Scheme()); err != nil {
