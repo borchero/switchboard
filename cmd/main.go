@@ -9,6 +9,7 @@ import (
 	"github.com/borchero/switchboard/internal/controllers"
 	"github.com/borchero/zeus/pkg/zeus"
 	certmanager "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	"github.com/go-logr/zapr"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,6 +32,9 @@ func main() {
 	ctx := context.Background()
 	logger := zeus.Logger(ctx)
 	defer zeus.Sync()
+
+	// Set controller-runtime logger to prevent spurious log messages
+	ctrl.SetLogger(zapr.NewLogger(logger))
 
 	// Load the config file if available
 	var config configv1.Config
