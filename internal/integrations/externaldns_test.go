@@ -14,7 +14,7 @@ import (
 )
 
 func TestExternalDNSWatchedObject(t *testing.T) {
-	integration := NewExternalDNS(nil, switchboard.NewServiceTarget("my-name", "my-namespace"))
+	integration := NewExternalDNS(nil, switchboard.NewServiceTarget("my-name", "my-namespace"), nil)
 	obj := integration.WatchedObject()
 	assert.Equal(t, "my-name", obj.GetName())
 	assert.Equal(t, "my-namespace", obj.GetNamespace())
@@ -32,7 +32,7 @@ func TestExternalDNSUpdateResource(t *testing.T) {
 	owner := k8tests.DummyService("my-service", namespace, 80)
 	err := client.Create(ctx, &owner)
 	require.Nil(t, err)
-	integration := NewExternalDNS(client, switchboard.NewServiceTarget(owner.Name, namespace))
+	integration := NewExternalDNS(client, switchboard.NewServiceTarget(owner.Name, namespace), nil)
 
 	// No resource should be created if no hosts are provided
 	var info IngressInfo
@@ -120,6 +120,20 @@ func TestExternalDNSRecordType(t *testing.T) {
 	assert.Equal(t, "AAAA", integration.recordType("2001:db8::1"))
 	assert.Equal(t, "CNAME", integration.recordType("example.lb.identifier.amazonaws.com"))
 }
+
+func TestExternalDNSWithCustomTTL(t *testing.T) {
+	// Test with custom TTL
+	customTTL := int64(3600)
+	integration := NewExternalDNS(nil, switchboard.NewServiceTarget("my-name", "my-namespace"), &customTTL)
+	externalDNSImpl := integration.(*externalDNS)
+	assert.Equal(t, endpoint.TTL(3600), externalDNSImpl.ttl)
+
+	// Test with default TTL (nil)
+	integration = NewExternalDNS(nil, switchboard.NewServiceTarget("my-name", "my-namespace"), nil)
+	externalDNSImpl = integration.(*externalDNS)
+	assert.Equal(t, endpoint.TTL(300), externalDNSImpl.ttl)
+}
+
 
 //-------------------------------------------------------------------------------------------------
 // UTILS

@@ -32,10 +32,12 @@ func integrationsFromConfig(
 					externalDNS.TargetService.Name,
 					externalDNS.TargetService.Namespace,
 				),
+				externalDNS.TTL,
 			))
 		} else {
 			result = append(result, integrations.NewExternalDNS(
 				client, switchboard.NewStaticTarget(externalDNS.TargetIPs...),
+				externalDNS.TTL,
 			))
 		}
 	}

@@ -22,9 +22,13 @@ type externalDNS struct {
 }
 
 // NewExternalDNS initializes a new external-dns integration whose created DNS endpoints target the
-// provided service.
-func NewExternalDNS(client client.Client, target switchboard.Target) Integration {
-	return &externalDNS{client, target, 300}
+// provided service. If ttl is nil, a default TTL of 300 seconds is used.
+func NewExternalDNS(client client.Client, target switchboard.Target, ttl *int64) Integration {
+	ttlValue := endpoint.TTL(300)
+	if ttl != nil {
+		ttlValue = endpoint.TTL(*ttl)
+	}
+	return &externalDNS{client, target, ttlValue}
 }
 
 func (*externalDNS) Name() string {
