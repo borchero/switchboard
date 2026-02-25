@@ -61,7 +61,7 @@ The following lists all values that may be set when installing this chart (see
 | integrations.externalDNS.targetIPs | list | `[]` | The static IP addresses that created DNS records should point to. Must not be provided    if the target service is set. |
 | integrations.externalDNS.targetService.name | string | `nil` | The name of the (Traefik) service whose IP address should be used for DNS records. |
 | integrations.externalDNS.targetService.namespace | string | `nil` | The namespace of the (Traefik) service whose IP address should be used for DNS records. |
-| integrations.externalDNS.ttl | int | `nil` | The TTL (Time To Live) for DNS records in seconds. If not specified, defaults to 300. Some DNS providers require a minimum TTL (e.g., deSEC requires 3600). |
+| integrations.externalDNS.ttl | string | `nil` | The TTL (Time To Live) for DNS records in seconds. If not specified, defaults to 300.    Some DNS providers require a minimum TTL (e.g., deSEC requires 3600). |
 | metrics.enabled | bool | `true` | Whether the metrics endpoint should be enabled. |
 | metrics.port | int | `9090` | The port on which Prometheus metrics can be scraped on path `/metrics`. |
 | nodeSelector | object | `{}` |  |
