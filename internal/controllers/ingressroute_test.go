@@ -21,7 +21,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/external-dns/endpoint"
+	externaldnsv1alpha1 "sigs.k8s.io/external-dns/apis/v1alpha1"
 )
 
 func TestSimpleIngress(t *testing.T) {
@@ -234,14 +234,14 @@ func runTest(t *testing.T, test testCase) {
 
 	// 2) DNS records
 	endpointName := types.NamespacedName{Name: test.Ingress.Name, Namespace: namespace}
-	var endpoint endpoint.DNSEndpoint
-	err = client.Get(ctx, endpointName, &endpoint)
+	var dnsEndpoint externaldnsv1alpha1.DNSEndpoint
+	err = client.Get(ctx, endpointName, &dnsEndpoint)
 	if len(test.DNSNames) == 0 {
 		assert.True(t, apierrors.IsNotFound(err))
 	} else {
 		assert.Nil(t, err)
-		assert.Len(t, endpoint.Spec.Endpoints, len(test.DNSNames))
-		for _, ep := range endpoint.Spec.Endpoints {
+		assert.Len(t, dnsEndpoint.Spec.Endpoints, len(test.DNSNames))
+		for _, ep := range dnsEndpoint.Spec.Endpoints {
 			assert.Len(t, ep.Targets, 1)
 			assert.Equal(t, service.Spec.ClusterIP, ep.Targets[0])
 		}
