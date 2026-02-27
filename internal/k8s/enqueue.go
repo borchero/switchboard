@@ -2,8 +2,8 @@ package k8s
 
 import (
 	"context"
+	"log/slog"
 
-	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -13,7 +13,7 @@ import (
 // the background.
 func EnqueueMapFunc[L client.ObjectList](
 	ctrlClient client.Client,
-	logger *zap.Logger,
+	logger *slog.Logger,
 	target client.Object,
 	list L,
 	getItems func(L) []client.Object,
@@ -28,7 +28,7 @@ func EnqueueMapFunc[L client.ObjectList](
 
 		// If our filter matches, we want to fetch all items of the specified type...
 		if err := ctrlClient.List(ctx, list); err != nil {
-			logger.Error("failed to list resources upon object change", zap.Error(err))
+			logger.Error("failed to list resources upon object change", "error", err)
 			return nil
 		}
 
