@@ -3,13 +3,13 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/ext"
 	"github.com/borchero/switchboard/internal/integrations"
 	"github.com/borchero/switchboard/internal/switchboard"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
-	"go.uber.org/zap"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -18,14 +18,14 @@ import (
 // IngressRouteReconciler reconciles an IngressRoute object.
 type IngressRouteReconciler struct {
 	client.Client
-	logger       *zap.Logger
+	logger       *slog.Logger
 	selector     switchboard.Selector
 	integrations []integrations.Integration
 }
 
 // NewIngressRouteReconciler creates a new IngressRouteReconciler.
 func NewIngressRouteReconciler(
-	client client.Client, logger *zap.Logger, config configv1.Config,
+	client client.Client, logger *slog.Logger, config configv1.Config,
 ) (IngressRouteReconciler, error) {
 	integrations, err := integrationsFromConfig(config, client)
 	if err != nil {
@@ -44,14 +44,14 @@ func NewIngressRouteReconciler(
 func (r *IngressRouteReconciler) Reconcile(
 	ctx context.Context, req ctrl.Request,
 ) (ctrl.Result, error) {
-	logger := r.logger.With(zap.String("name", req.String()))
+	logger := r.logger.With("name", req.String())
 
 	// First, we retrieve the full resource
 	var ingressRoute traefik.IngressRoute
 
 	if err := r.Get(ctx, req.NamespacedName, &ingressRoute); err != nil {
 		if !apierrs.IsNotFound(err) {
-			logger.Error("unable to query for ingress route", zap.Error(err))
+			logger.Error("unable to query for ingress route", "error", err)
 		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -69,7 +69,7 @@ func (r *IngressRouteReconciler) Reconcile(
 		WithTLSHostsIfAvailable(ingressRoute.Spec.TLS).
 		WithRouteHostsIfRequired(ingressRoute.Spec.Routes)
 	if err != nil {
-		logger.Error("failed to parse hosts from ingress route", zap.Error(err))
+		logger.Error("failed to parse hosts from ingress route", "error", err)
 		return ctrl.Result{}, err
 	}
 	info := integrations.IngressInfo{
@@ -83,16 +83,16 @@ func (r *IngressRouteReconciler) Reconcile(
 	for _, itg := range r.integrations {
 		if !r.selector.MatchesIntegration(ingressRoute.Annotations, itg.Name()) {
 			// If integration is ignored, skip it
-			logger.Debug("ignoring integration", zap.String("integration", itg.Name()))
+			logger.Debug("ignoring integration", "integration", itg.Name())
 			continue
 		}
 		if err := itg.UpdateResource(ctx, &ingressRoute, info); err != nil {
 			logger.Error("failed to upsert resource",
-				zap.String("integration", itg.Name()), zap.Error(err),
+				"integration", itg.Name(), "error", err,
 			)
 			return ctrl.Result{}, err
 		}
-		logger.Debug("successfully upserted resource", zap.String("integration", itg.Name()))
+		logger.Debug("successfully upserted resource", "integration", itg.Name())
 	}
 
 	logger.Info("ingress route is up to date")
