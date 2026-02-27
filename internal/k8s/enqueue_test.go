@@ -2,13 +2,13 @@ package k8s
 
 import (
 	"context"
+	"log/slog"
 	"testing"
 
 	"github.com/borchero/switchboard/internal/ext"
 	"github.com/borchero/switchboard/internal/k8tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -35,7 +35,7 @@ func TestEnqueueMapFunc(t *testing.T) {
 	// Create the enqueue function which is triggered by service 1
 	var services v1.ServiceList
 	enqueuer := EnqueueMapFunc(
-		ctrlClient, zap.NewNop(), &service1, &services,
+		ctrlClient, slog.New(slog.DiscardHandler), &service1, &services,
 		func(list *v1.ServiceList) []client.Object {
 			return ext.Map(list.Items, func(v v1.Service) client.Object { return &v })
 		},

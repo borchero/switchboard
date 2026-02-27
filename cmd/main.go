@@ -1,17 +1,15 @@
 package main
 
 import (
-	"context"
 	"flag"
+	"log/slog"
 	"os"
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/controllers"
-	"github.com/borchero/zeus/pkg/zeus"
 	certmanager "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-	"github.com/go-logr/zapr"
+	"github.com/go-logr/logr"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
-	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -29,22 +27,23 @@ func main() {
 	flag.Parse()
 
 	// Initialize logger
-	ctx := context.Background()
-	logger := zeus.Logger(ctx)
-	defer zeus.Sync()
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
+	slog.SetDefault(logger)
 
 	// Set controller-runtime logger to prevent spurious log messages
-	ctrl.SetLogger(zapr.NewLogger(logger))
+	ctrl.SetLogger(logr.FromSlogHandler(logger.Handler()))
 
 	// Load the config file if available
 	var config configv1.Config
 	if cfgFile != "" {
 		contents, err := os.ReadFile(cfgFile)
 		if err != nil {
-			logger.Fatal("failed to read config file", zap.Error(err))
+			logger.Error("failed to read config file", slog.Any("error", err))
+			os.Exit(1)
 		}
 		if err := yaml.Unmarshal(contents, &config); err != nil {
-			logger.Fatal("failed to parse config file", zap.Error(err))
+			logger.Error("failed to parse config file", slog.Any("error", err))
+			os.Exit(1)
 		}
 	}
 
@@ -64,30 +63,36 @@ func main() {
 	// Create the manager
 	manager, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
-		logger.Fatal("unable to create manager", zap.Error(err))
+		logger.Error("unable to create manager", slog.Any("error", err))
+		os.Exit(1)
 	}
 
 	// Create the controllers
 	controller, err := controllers.NewIngressRouteReconciler(manager.GetClient(), logger, config)
 	if err != nil {
-		logger.Fatal("unable to initialize ingress route controller", zap.Error(err))
+		logger.Error("unable to initialize ingress route controller", slog.Any("error", err))
+		os.Exit(1)
 	}
 	if err := controller.SetupWithManager(manager); err != nil {
-		logger.Fatal("unable to start ingress route controller", zap.Error(err))
+		logger.Error("unable to start ingress route controller", slog.Any("error", err))
+		os.Exit(1)
 	}
 
 	// Add health check endpoints
 	if err := manager.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		logger.Fatal("unable to set up ready check at /readyz", zap.Error(err))
+		logger.Error("unable to set up ready check at /readyz", slog.Any("error", err))
+		os.Exit(1)
 	}
 	if err := manager.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		logger.Fatal("unable to set up health check at /healthz", zap.Error(err))
+		logger.Error("unable to set up health check at /healthz", slog.Any("error", err))
+		os.Exit(1)
 	}
 
 	// Start the manager
 	logger.Info("launching manager")
 	if err := manager.Start(ctrl.SetupSignalHandler()); err != nil {
-		logger.Fatal("failed to run manager", zap.Error(err))
+		logger.Error("failed to run manager", slog.Any("error", err))
+		os.Exit(1)
 	}
 	logger.Info("gracefully shut down")
 }

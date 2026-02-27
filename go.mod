@@ -5,13 +5,11 @@ go 1.25.0
 require (
 	dario.cat/mergo v1.0.2
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
-	github.com/borchero/zeus v1.0.0
 	github.com/cert-manager/cert-manager v1.19.4
-	github.com/go-logr/zapr v1.3.0
+	github.com/go-logr/logr v1.4.3
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
 	github.com/traefik/traefik/v3 v3.6.9
-	go.uber.org/zap v1.27.1
 	k8s.io/api v0.34.3
 	k8s.io/apimachinery v0.34.3
 	k8s.io/client-go v0.34.3
@@ -36,7 +34,6 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.22.1 // indirect
 	github.com/go-openapi/jsonreference v0.21.2 // indirect

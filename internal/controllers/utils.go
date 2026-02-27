@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log/slog"
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
 	"github.com/borchero/switchboard/internal/ext"
@@ -9,7 +10,6 @@ import (
 	"github.com/borchero/switchboard/internal/k8s"
 	"github.com/borchero/switchboard/internal/switchboard"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
-	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -53,7 +53,7 @@ func builderWithIntegrations(
 	builder *builder.Builder,
 	integrations []integrations.Integration,
 	ctrlClient client.Client,
-	logger *zap.Logger,
+	logger *slog.Logger,
 ) *builder.Builder {
 	// Reconcile whenever an owned resource of one of the integrations is modified
 	for _, itg := range integrations {
