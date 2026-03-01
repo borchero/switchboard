@@ -58,7 +58,7 @@ jobs:
           outputs: type=docker,dest=/tmp/image.tar
           tags: switchboard:dev
       - name: Upload image for testing
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: github.event_name != 'release'
         with:
           name: docker-image
@@ -108,7 +108,7 @@ jobs:
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v3
       - name: Download image for testing
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: docker-image
           path: /tmp
