@@ -38,8 +38,8 @@ github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S
 github.com/fsnotify/fsnotify v1.9.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
 github.com/fxamacker/cbor/v2 v2.9.0 h1:NpKPmjDBgUfBms6tr6JZkTHtfFGcMKsw3eGcmD/sapM=
 github.com/fxamacker/cbor/v2 v2.9.0/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
-github.com/go-acme/lego/v4 v4.32.0 h1:z7Ss7aa1noabhKj+DBzhNCO2SM96xhE3b0ucVW3x8Tc=
-github.com/go-acme/lego/v4 v4.32.0/go.mod h1:lI2fZNdgeM/ymf9xQ9YKbgZm6MeDuf91UrohMQE4DhI=
+github.com/go-acme/lego/v4 v4.33.0 h1:2KrRKieG+VczT4zvVXKAY7Tp/S3XLvh/QImofBALRAM=
+github.com/go-acme/lego/v4 v4.33.0/go.mod h1:lI2fZNdgeM/ymf9xQ9YKbgZm6MeDuf91UrohMQE4DhI=
 github.com/go-jose/go-jose/v4 v4.1.3 h1:CVLmWDhDVRa6Mi/IgCgaopNosCaHz7zrMeF9MlZRkrs=
 github.com/go-jose/go-jose/v4 v4.1.3/go.mod h1:x4oUasVrzR7071A4TnHLGSPpNOm2a21K9Kf04k1rs08=
 github.com/go-kit/kit v0.13.0 h1:OoneCcHKHQ03LfBpoQCUfCluwd2Vt3ohz+kvbJneZAU=
@@ -169,8 +169,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/traefik/paerser v0.2.2 h1:cpzW/ZrQrBh3mdwD/jnp6aXASiUFKOVr6ldP+keJTcQ=
 github.com/traefik/paerser v0.2.2/go.mod h1:7BBDd4FANoVgaTZG+yh26jI6CA2nds7D/4VTEdIsh24=
-github.com/traefik/traefik/v3 v3.6.11 h1:LPM1Z/UCgFrWggIQ5OER9f6ndZIElztZnwCTHq9fCgI=
-github.com/traefik/traefik/v3 v3.6.11/go.mod h1:/KpGiaT9+/8JLF4YCOtRFFQAmbXHA1MKV9c6MDUeqMA=
+github.com/traefik/traefik/v3 v3.6.12 h1:6pe4s7aaDTQs+AsF7KP3sM/xnq7zOVvibRQe5tw9eFo=
+github.com/traefik/traefik/v3 v3.6.12/go.mod h1:CAiMG7xwkYlNbIKsFzvgxSuHCqZ2KI/0DTQVkvS5Nuo=
 github.com/unrolled/render v1.7.0 h1:1yke01/tZiZpiXfUG+zqB+6fq3G4I+KDmnh0EhPq7So=
 github.com/unrolled/render v1.7.0/go.mod h1:LwQSeDhjml8NLjIO9GJO1/1qpFJxtfVIpzxXKjfVkoI=
 github.com/vulcand/predicate v1.3.0 h1:jtNe4PHbLJ649dR7Gl+MSAzUhLGtLspAkWlSjoOiXg8=
