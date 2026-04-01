@@ -27,7 +27,7 @@ func TestCertManagerUpdateResource(t *testing.T) {
 	require.Nil(t, err)
 	integration := NewCertManager(client, certmanager.Certificate{
 		Spec: certmanager.CertificateSpec{
-			IssuerRef: cmmeta.ObjectReference{
+			IssuerRef: cmmeta.IssuerReference{
 				Kind: "ClusterIssuer",
 				Name: "my-issuer",
 			},

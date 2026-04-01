@@ -279,7 +279,7 @@ func createConfig(service *v1.Service) configv1.Config {
 			CertManager: &configv1.CertManagerIntegrationConfig{
 				Template: certmanager.Certificate{
 					Spec: certmanager.CertificateSpec{
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Kind: "ClusterIssuer",
 							Name: "my-issuer",
 						},
