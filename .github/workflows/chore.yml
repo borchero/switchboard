@@ -34,7 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Post comment about invalid PR title
         if: failure()
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: conventional-commit-pr-title
           message: |
@@ -51,7 +51,7 @@ jobs:
             </details>
       - name: Delete comment about invalid PR title
         if: success()
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: conventional-commit-pr-title
           delete: true
@@ -64,7 +64,7 @@ jobs:
       pull-requests: write
     steps:
       - name: ${{ github.event_name == 'pull_request_target' && 'Assign labels' || 'Update release draft' }}
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@v7
         with:
           disable-releaser: ${{ github.event_name == 'pull_request_target' }}
           disable-autolabeler: ${{ github.event_name == 'push' }}
