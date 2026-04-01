@@ -5,6 +5,8 @@ updates:
     package-ecosystem: github-actions
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
     groups:
       ci-dependencies:
         patterns:
@@ -18,6 +20,8 @@ updates:
     package-ecosystem: gomod
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
     groups:
       go-dependencies:
         patterns:
@@ -31,6 +35,8 @@ updates:
     package-ecosystem: docker
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
     groups:
       docker-dependencies:
         patterns:
