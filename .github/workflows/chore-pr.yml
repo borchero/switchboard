@@ -3,11 +3,7 @@ on:
   pull_request_target:
     branches: [main]
     types: [opened, reopened, edited, synchronize]
-  push:
-    branches: [main]
 
-permissions:
-  contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -15,7 +11,6 @@ concurrency:
 jobs:
   check-pr-title:
     name: Check PR Title
-    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,7 +18,7 @@ jobs:
     steps:
       - name: Check valid conventional commit message
         id: lint
-        uses: amannn/action-semantic-pull-request@v6
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
         with:
           subjectPattern: ^[A-Z].+[^. ]$ # subject must start with uppercase letter and may not end with a dot/space
           scopes: |
@@ -34,7 +29,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Post comment about invalid PR title
         if: failure()
-        uses: marocchino/sticky-pull-request-comment@v3
+        uses: marocchino/sticky-pull-request-comment@70d2764d1a7d5d9560b100cbea0077fc8f633987 # v3.0.2
         with:
           header: conventional-commit-pr-title
           message: |
@@ -51,22 +46,19 @@ jobs:
             </details>
       - name: Delete comment about invalid PR title
         if: success()
-        uses: marocchino/sticky-pull-request-comment@v3
+        uses: marocchino/sticky-pull-request-comment@70d2764d1a7d5d9560b100cbea0077fc8f633987 # v3.0.2
         with:
           header: conventional-commit-pr-title
           delete: true
 
-  release-drafter:
-    name: ${{ github.event_name == 'pull_request_target' && 'Assign Labels' || 'Draft Release' }}
+  assign-labels:
+    name: Assign Labels
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
     steps:
-      - name: ${{ github.event_name == 'pull_request_target' && 'Assign labels' || 'Update release draft' }}
-        uses: release-drafter/release-drafter@v7
+      - name: Assign labels
+        uses: release-drafter/release-drafter/autolabeler@139054aeaa9adc52ab36ddf67437541f039b88e2 # v7.1.1
         with:
-          disable-releaser: ${{ github.event_name == 'pull_request_target' }}
-          disable-autolabeler: ${{ github.event_name == 'push' }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+          token: ${{ github.token }}
