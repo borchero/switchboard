@@ -78,6 +78,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	tcpController, err := controllers.NewIngressRouteTCPReconciler(manager.GetClient(), logger, config)
+	if err != nil {
+		logger.Error("unable to initialize ingress route tcp controller", "error", err)
+		os.Exit(1)
+	}
+	if err := tcpController.SetupWithManager(manager); err != nil {
+		logger.Error("unable to start ingress route tcp controller", "error", err)
+		os.Exit(1)
+	}
+
 	// Add health check endpoints
 	if err := manager.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		logger.Error("unable to set up ready check at /readyz", "error", err)

@@ -15,23 +15,23 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// IngressRouteReconciler reconciles an IngressRoute object.
-type IngressRouteReconciler struct {
+// IngressRouteTCPReconciler reconciles an IngressRouteTCP object.
+type IngressRouteTCPReconciler struct {
 	client.Client
 	logger       *slog.Logger
 	selector     switchboard.Selector
 	integrations []integrations.Integration
 }
 
-// NewIngressRouteReconciler creates a new IngressRouteReconciler.
-func NewIngressRouteReconciler(
+// NewIngressRouteTCPReconciler creates a new IngressRouteTCPReconciler.
+func NewIngressRouteTCPReconciler(
 	client client.Client, logger *slog.Logger, config configv1.Config,
-) (IngressRouteReconciler, error) {
+) (IngressRouteTCPReconciler, error) {
 	integrations, err := integrationsFromConfig(config, client)
 	if err != nil {
-		return IngressRouteReconciler{}, fmt.Errorf("failed to initialize integrations: %s", err)
+		return IngressRouteTCPReconciler{}, fmt.Errorf("failed to initialize integrations: %s", err)
 	}
-	return IngressRouteReconciler{
+	return IngressRouteTCPReconciler{
 		Client:       client,
 		logger:       logger,
 		selector:     switchboard.NewSelector(config.Selector.IngressClass),
@@ -41,40 +41,40 @@ func NewIngressRouteReconciler(
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *IngressRouteReconciler) Reconcile(
+func (r *IngressRouteTCPReconciler) Reconcile(
 	ctx context.Context, req ctrl.Request,
 ) (ctrl.Result, error) {
 	logger := r.logger.With("name", req.String())
 
 	// First, we retrieve the full resource
-	var ingressRoute traefik.IngressRoute
+	var ingressRoute traefik.IngressRouteTCP
 
 	if err := r.Get(ctx, req.NamespacedName, &ingressRoute); err != nil {
 		if !apierrs.IsNotFound(err) {
-			logger.Error("unable to query for ingress route", "error", err)
+			logger.Error("unable to query for ingress route tcp", "error", err)
 		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	// Then, we check if the resource should be processed
 	if !r.selector.Matches(ingressRoute.Annotations) {
-		logger.Debug("ignoring ingress route")
+		logger.Debug("ignoring ingress route tcp")
 		return ctrl.Result{}, nil
 	}
-	logger.Debug("reconciling ingress route")
+	logger.Debug("reconciling ingress route tcp")
 
 	// Now, we have to ensure that all the dependent resources exist by calling all integrations.
 	// For this, we first have to extract information about the ingress.
 	collection, err := switchboard.NewHostCollection().
-		WithTLSHostsIfAvailable(ingressRoute.Spec.TLS).
-		WithRouteHostsIfRequired(ingressRoute.Spec.Routes)
+		WithTLSTCPHostsIfAvailable(ingressRoute.Spec.TLS).
+		WithRouteTCPHostsIfRequired(ingressRoute.Spec.Routes)
 	if err != nil {
-		logger.Error("failed to parse hosts from ingress route", "error", err)
+		logger.Error("failed to parse hosts from ingress route tcp", "error", err)
 		return ctrl.Result{}, err
 	}
 	info := integrations.IngressInfo{
 		Hosts: collection.Hosts(),
-		TLSSecretName: ext.AndThen(ingressRoute.Spec.TLS, func(tls traefik.TLS) string {
+		TLSSecretName: ext.AndThen(ingressRoute.Spec.TLS, func(tls traefik.TLSTCP) string {
 			return tls.SecretName
 		}),
 	}
@@ -95,17 +95,17 @@ func (r *IngressRouteReconciler) Reconcile(
 		logger.Debug("successfully upserted resource", "integration", itg.Name())
 	}
 
-	logger.Info("ingress route is up to date")
+	logger.Info("ingress route tcp is up to date")
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *IngressRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	var list traefik.IngressRouteList
-	builder := ctrl.NewControllerManagedBy(mgr).For(&traefik.IngressRoute{})
+func (r *IngressRouteTCPReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	var list traefik.IngressRouteTCPList
+	builder := ctrl.NewControllerManagedBy(mgr).For(&traefik.IngressRouteTCP{})
 	builder = builderWithIntegrations(builder, r.integrations, r, r.logger, &list,
-		func(list *traefik.IngressRouteList) []client.Object {
-			return ext.Map(list.Items, func(v traefik.IngressRoute) client.Object {
+		func(list *traefik.IngressRouteTCPList) []client.Object {
+			return ext.Map(list.Items, func(v traefik.IngressRouteTCP) client.Object {
 				return &v
 			})
 		},
