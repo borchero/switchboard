@@ -133,7 +133,10 @@ func (a ingressRouteAdapter) newResource() client.Object {
 }
 
 func (a ingressRouteAdapter) extractInfo(obj client.Object) (integrations.IngressInfo, error) {
-	ir := obj.(*traefik.IngressRoute)
+	ir, ok := obj.(*traefik.IngressRoute)
+	if !ok {
+		return integrations.IngressInfo{}, fmt.Errorf("unexpected resource type %T", obj)
+	}
 	collection, err := switchboard.NewHostCollection().
 		WithTLSHostsIfAvailable(ir.Spec.TLS).
 		WithRouteHostsIfRequired(ir.Spec.Routes)
@@ -174,7 +177,10 @@ func (a ingressRouteTCPAdapter) newResource() client.Object {
 }
 
 func (a ingressRouteTCPAdapter) extractInfo(obj client.Object) (integrations.IngressInfo, error) {
-	ir := obj.(*traefik.IngressRouteTCP)
+	ir, ok := obj.(*traefik.IngressRouteTCP)
+	if !ok {
+		return integrations.IngressInfo{}, fmt.Errorf("unexpected resource type %T", obj)
+	}
 	collection, err := switchboard.NewHostCollection().
 		WithTLSTCPHostsIfAvailable(ir.Spec.TLS).
 		WithRouteTCPHostsIfRequired(ir.Spec.Routes)
