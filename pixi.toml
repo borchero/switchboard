@@ -39,6 +39,7 @@ run-controller = "go run cmd/main.go --config dev/config.yaml"
 cluster-create = "minikube start --profile switchboard"
 cluster-setup = """
     kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.3/docs/content/reference/dynamic-configuration/traefik.io_ingressroutes.yaml
+    && kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.3/docs/content/reference/dynamic-configuration/traefik.io_ingressroutetcps.yaml
     && kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.yaml
     && kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.20.0/config/crd/standard/dnsendpoints.externaldns.k8s.io.yaml
     && kubectl wait -n cert-manager --for=condition=Available deployment --all --timeout=120s

@@ -71,3 +71,58 @@ func TestParseRouteHostsNoop(t *testing.T) {
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com"})
 }
+
+func TestParseTLSTCPHosts(t *testing.T) {
+	hosts := NewHostCollection().WithTLSTCPHostsIfAvailable(nil)
+	assert.Equal(t, hosts.Len(), 0)
+
+	hosts.WithTLSTCPHostsIfAvailable(&traefik.TLSTCP{
+		Domains: []traefiktypes.Domain{{
+			Main: "example.com",
+			SANs: []string{"www.example.com"},
+		}},
+	})
+	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com", "www.example.com"})
+}
+
+func TestParseRouteTCPHosts(t *testing.T) {
+	hosts, err := NewHostCollection().WithRouteTCPHostsIfRequired([]traefik.RouteTCP{{
+		Match: "HostSNI(`example.com`)",
+	}})
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com"})
+
+	hosts, err = NewHostCollection().WithRouteTCPHostsIfRequired([]traefik.RouteTCP{{
+		Match: "HostSNI(`example.com`, `www.example.com`)",
+	}})
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com", "www.example.com"})
+
+	hosts, err = NewHostCollection().WithRouteTCPHostsIfRequired([]traefik.RouteTCP{{
+		Match: "HostSNI(`example.com`)",
+	}, {
+		Match: "HostSNI(`v2.example.com`)",
+	}})
+	assert.Nil(t, err)
+	assert.ElementsMatch(
+		t, hosts.Hosts(), []string{"example.com", "v2.example.com"},
+	)
+}
+
+func TestParseRouteTCPHostsWildcard(t *testing.T) {
+	hosts, err := NewHostCollection().WithRouteTCPHostsIfRequired([]traefik.RouteTCP{{
+		Match: "HostSNI(`*`)",
+	}})
+	assert.Nil(t, err)
+	assert.Equal(t, hosts.Len(), 0)
+}
+
+func TestParseRouteTCPHostsNoop(t *testing.T) {
+	hosts := NewHostCollection()
+	hosts.hosts = map[string]struct{}{"example.com": {}}
+	_, err := hosts.WithRouteTCPHostsIfRequired([]traefik.RouteTCP{{
+		Match: "HostSNI(`www.example.com`)",
+	}})
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com"})
+}

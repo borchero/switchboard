@@ -3,7 +3,8 @@ package switchboard
 import (
 	"fmt"
 
-	muxer "github.com/traefik/traefik/v3/pkg/muxer/http"
+	muxerhttp "github.com/traefik/traefik/v3/pkg/muxer/http"
+	muxertcp "github.com/traefik/traefik/v3/pkg/muxer/tcp"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 )
 
@@ -43,13 +44,52 @@ func (a *HostCollection) WithRouteHostsIfRequired(
 	}
 	for _, route := range routes {
 		if route.Kind == "Rule" {
-			hosts, err := muxer.ParseDomains(route.Match)
+			hosts, err := muxerhttp.ParseDomains(route.Match)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse domains: %s", err)
 			}
 			for _, host := range hosts {
 				a.hosts[host] = struct{}{}
 			}
+		}
+	}
+	return a, nil
+}
+
+// WithTLSTCPHostsIfAvailable aggregates all hosts found in the provided TLSTCP configuration. If
+// the TLS configuration is empty (i.e. `nil`), no hosts are extracted. This method should only be
+// called on a freshly initialized aggregator.
+func (a *HostCollection) WithTLSTCPHostsIfAvailable(config *traefik.TLSTCP) *HostCollection {
+	if config != nil {
+		for _, domain := range config.Domains {
+			a.hosts[domain.Main] = struct{}{}
+			for _, san := range domain.SANs {
+				a.hosts[san] = struct{}{}
+			}
+		}
+	}
+	return a
+}
+
+// WithRouteTCPHostsIfRequired aggregates all (unique) hosts found in the provided TCP routes. If
+// the aggregator already manages at least one host, this method is a noop, regardless of the routes
+// passed as parameters. Host names are extracted from `HostSNI()` matchers in the route rules.
+func (a *HostCollection) WithRouteTCPHostsIfRequired(
+	routes []traefik.RouteTCP,
+) (*HostCollection, error) {
+	if len(a.hosts) > 0 {
+		return a, nil
+	}
+	for _, route := range routes {
+		hosts, err := muxertcp.ParseHostSNI(route.Match)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse HostSNI domains: %s", err)
+		}
+		for _, host := range hosts {
+			if host == "*" {
+				continue
+			}
+			a.hosts[host] = struct{}{}
 		}
 	}
 	return a, nil

@@ -5,11 +5,9 @@ import (
 	"log/slog"
 
 	configv1 "github.com/borchero/switchboard/internal/config/v1"
-	"github.com/borchero/switchboard/internal/ext"
 	"github.com/borchero/switchboard/internal/integrations"
 	"github.com/borchero/switchboard/internal/k8s"
 	"github.com/borchero/switchboard/internal/switchboard"
-	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -49,11 +47,13 @@ func integrationsFromConfig(
 	return result, nil
 }
 
-func builderWithIntegrations(
+func builderWithIntegrations[L client.ObjectList](
 	builder *builder.Builder,
 	integrations []integrations.Integration,
 	ctrlClient client.Client,
 	logger *slog.Logger,
+	list L,
+	getItems func(L) []client.Object,
 ) *builder.Builder {
 	// Reconcile whenever an owned resource of one of the integrations is modified
 	for _, itg := range integrations {
@@ -63,13 +63,8 @@ func builderWithIntegrations(
 	// Watch for dependent resources if required
 	for _, itg := range integrations {
 		if itg.WatchedObject() != nil {
-			var list traefik.IngressRouteList
-			enqueue := k8s.EnqueueMapFunc(ctrlClient, logger, itg.WatchedObject(), &list,
-				func(list *traefik.IngressRouteList) []client.Object {
-					return ext.Map(list.Items, func(v traefik.IngressRoute) client.Object {
-						return &v
-					})
-				},
+			enqueue := k8s.EnqueueMapFunc(ctrlClient, logger, itg.WatchedObject(), list,
+				getItems,
 			)
 			builder = builder.Watches(
 				itg.WatchedObject(),
