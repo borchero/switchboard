@@ -27,9 +27,9 @@ default = ["lint"]
 [tasks]
 docs = { cwd = "chart", cmd = """
     helm-docs
-    && sed -i -E '/cert-manager\\.installCRDs/d' README.md
-    && sed -i -E '/external-dns\\.crd/d' README.md
-    && sed -i -E '/external-dns\\.sources/d' README.md
+    sed -i -E '/cert-manager\\.installCRDs/d' README.md
+    sed -i -E '/external-dns\\.crd/d' README.md
+    sed -i -E '/external-dns\\.sources/d' README.md
 """ }
 lint = "golangci-lint run ./..."
 run-controller = "go run cmd/main.go --config dev/config.yaml"
@@ -39,11 +39,11 @@ run-controller = "go run cmd/main.go --config dev/config.yaml"
 cluster-create = "minikube start --profile switchboard"
 cluster-setup = """
     kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.3/docs/content/reference/dynamic-configuration/traefik.io_ingressroutes.yaml
-    && kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.yaml
-    && kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.20.0/config/crd/standard/dnsendpoints.externaldns.k8s.io.yaml
-    && kubectl wait -n cert-manager --for=condition=Available deployment --all --timeout=120s
-    && kubectl apply -f dev/manifests/ca-secret.yaml
-    && kubectl apply -f dev/manifests/tls-issuer.yaml
+    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.20.0/config/crd/standard/dnsendpoints.externaldns.k8s.io.yaml
+    kubectl wait -n cert-manager --for=condition=Available deployment --all --timeout=120s
+    kubectl apply -f dev/manifests/ca-secret.yaml
+    kubectl apply -f dev/manifests/tls-issuer.yaml
 """
 cluster-teardown = "minikube delete --profile switchboard"
 cluster-tunnel-lb = "minikube tunnel --profile switchboard"
@@ -57,5 +57,5 @@ cmd = "go test ./... -coverprofile cover.out"
 args = ["image_name", "image_tag"]
 cmd = """
     yq -yi '.image.name = \"{{ image_name }}\" | .image.tag = \"{{ image_tag }}\"' tests/config/switchboard.yaml
-    && bats tests -t
+    bats tests -t
 """
