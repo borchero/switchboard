@@ -9,11 +9,11 @@ require (
 	github.com/go-logr/logr v1.4.3
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
-	github.com/traefik/traefik/v3 v3.6.17
-	k8s.io/api v0.36.0
-	k8s.io/apimachinery v0.36.0
-	k8s.io/client-go v0.36.0
-	sigs.k8s.io/controller-runtime v0.24.0
+	github.com/traefik/traefik/v3 v3.7.1
+	k8s.io/api v0.36.1
+	k8s.io/apimachinery v0.36.1
+	k8s.io/client-go v0.36.1
+	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/external-dns v0.21.0
 	sigs.k8s.io/yaml v1.6.0
 )
