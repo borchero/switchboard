@@ -20,7 +20,7 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@1b2de7f3351f171c8b4dfeb558c639cb58ed4ec0 # v0.9.5
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11 # v0.9.6
         with:
           environments: default
           activate-environment: true
@@ -38,7 +38,7 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@1b2de7f3351f171c8b4dfeb558c639cb58ed4ec0 # v0.9.5
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11 # v0.9.6
         with:
           environments: default
           activate-environment: true
@@ -51,6 +51,6 @@ jobs:
       - name: Run unit tests
         run: pixi run test-coverage
       - name: Upload coverage
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
