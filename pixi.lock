@@ -16,7 +16,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cfgv-3.5.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/distlib-0.4.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/filelock-3.24.3-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.10.1-hfc2019e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.14.0-hfc2019e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/helm-docs-1.14.2-ha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/icu-78.2-h33c6efd_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/identify-2.6.16-pyhd8ed1ab_0.conda
@@ -77,7 +77,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cfgv-3.5.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/distlib-0.4.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/filelock-3.24.3-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.10.1-h820172f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.14.0-hf76c51c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/helm-docs-1.14.2-hf450f58_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/icu-78.2-h38cb7af_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/identify-2.6.16-pyhd8ed1ab_0.conda
@@ -245,20 +245,22 @@ packages:
   license: Unlicense
   size: 24808
   timestamp: 1771468713029
-- conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.10.1-hfc2019e_0.conda
-  sha256: 9c4736271ba0c917e1f64bb53e528957db206639cd7fb9039c63cb3016661e21
-  md5: 27c36d933cb36eeb26a003479e7bc98d
+- conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.14.0-hfc2019e_0.conda
+  sha256: 5dc067d7b0b8f1df3147ca09635685fd429b9669453b602e6aab8e4d5f1723f8
+  md5: 80763e3f2e041cf0520af1faad2bf62e
   license: GPL-3.0-only
   license_family: GPL
-  size: 14359928
-  timestamp: 1771398317142
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.10.1-h820172f_0.conda
-  sha256: 2ac6dcf81956d579b161cae6b193c6b344255f86816e81d78ddaac64f13497f4
-  md5: 77e07217f921648ec510201a33c2437b
+  run_exports: {}
+  size: 14727872
+  timestamp: 1790277781207
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.14.0-hf76c51c_0.conda
+  sha256: 5e538a308ec49df5d8144f211981e8eef8086fa7baa7a871313b996db7f719b5
+  md5: 5a398ad6ab59b613d4e63787b2a745f5
   license: GPL-3.0-only
   license_family: GPL
-  size: 12789148
-  timestamp: 1771398358171
+  run_exports: {}
+  size: 13208864
+  timestamp: 1790277788690
 - conda: https://conda.anaconda.org/conda-forge/linux-64/helm-docs-1.14.2-ha770c72_1.conda
   sha256: 5ed5f1b0d728c91bf79bf58c457d09b76a3f7ba2d203c290eb4c7606c3bcdf8c
   md5: 88989ff5d851dd0e29cf877407192f12

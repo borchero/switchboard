@@ -10,6 +10,7 @@ import (
 	certmanager "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/go-logr/logr"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -107,5 +108,6 @@ func initScheme(config configv1.Config, scheme *runtime.Scheme) {
 
 	if config.Integrations.ExternalDNS != nil {
 		utilruntime.Must(externaldnsv1alpha1.AddToScheme(scheme))
+		metav1.AddToGroupVersion(scheme, externaldnsv1alpha1.GroupVersion)
 	}
 }

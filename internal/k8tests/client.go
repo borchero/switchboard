@@ -8,6 +8,7 @@ import (
 	certmanager "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/stretchr/testify/require"
 	traefik "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -28,6 +29,7 @@ func NewScheme() *runtime.Scheme {
 	utilruntime.Must(traefik.AddToScheme(scheme))
 	// >>> external-dns
 	utilruntime.Must(externaldnsv1alpha1.AddToScheme(scheme))
+	metav1.AddToGroupVersion(scheme, externaldnsv1alpha1.GroupVersion)
 	return scheme
 }
 
