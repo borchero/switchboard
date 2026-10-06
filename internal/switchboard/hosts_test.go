@@ -71,3 +71,38 @@ func TestParseRouteHostsNoop(t *testing.T) {
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, hosts.Hosts(), []string{"example.com"})
 }
+
+func TestParseRouteHostsNegation(t *testing.T) {
+	cases := []struct {
+		name  string
+		rule  string
+		hosts []string
+	}{
+		{
+			name:  "mixed",
+			rule:  "Host(`allowed.example`) && !Host(`blocked.example`)",
+			hosts: []string{"allowed.example"},
+		},
+		{
+			name:  "negative only",
+			rule:  "!Host(`blocked.example`)",
+			hosts: []string{},
+		},
+		{
+			name:  "double negative",
+			rule:  "!!Host(`allowed.example`)",
+			hosts: []string{"allowed.example"},
+		},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			hosts, err := NewHostCollection().WithRouteHostsIfRequired([]traefik.Route{{
+				Kind:  "Rule",
+				Match: test.rule,
+			}})
+			if assert.NoError(t, err) {
+				assert.ElementsMatch(t, test.hosts, hosts.Hosts())
+			}
+		})
+	}
+}
